@@ -1,0 +1,18 @@
+# Arquivos compilados do Java
+bin/
+*.class
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.iml
+*.project
+*.classpath
+.settings/
+nbproject/
+build/
+dist/
+
+# Sistema Operacional
+Thumbs.db
+.DS_Store

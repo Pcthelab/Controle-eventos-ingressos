@@ -5,6 +5,8 @@ Projeto Prático referente à **Avaliação P2** da disciplina de **Programaçã
 **Instituição:** FATEC Mogi Mirim  
 **Materiais de Referência:** POO_07 a POO_10  
 
+![Interface Gráfica Moderna](preview_ui.png)  
+
 ---
 
 ## 👥 1. Identificação do(s) Aluno(s)
@@ -169,3 +171,18 @@ Em cumprimento à **Regra 2 (Uso de IA Generativa e Registro de Prompts)** estip
   A IA executou os testes via terminal e detectou uma sutileza no `equals()`, que comparava `getClass() != o.getClass()` entre `IngressoMeia` e `IngressoInteira`. A IA refinou o método para usar `instanceof Ingresso`, permitindo a identificação polimórfica pelo código e evento. Todos os testes passaram com 100% de sucesso.
 - **Refinamento aplicado:**
   Atualização do arquivo `README.md` com o histórico consolidado e compilação final bem-sucedida.
+
+---
+
+### 🔹 Interação 5: Redesign e Modernização da Interface Swing
+- **O que foi solicitado à IA:**
+  > "Preciso de melhorias na interface do Swing, uma interface boa e funcional, pois o visual padrão cinza/antigo está desagradável."
+- **Resposta obtida:**
+  A IA reprojetou completamente a interface visual em `javax.swing.*` adotando arquitetura moderna estilo Dashboard (Tailwind/Clean Slate) sem depender de bibliotecas externas:
+  - Header escuro com badge dinâmico de status;
+  - 4 Cards de KPIs em tempo real (Total Emitidos, Público na Catraca, Cancelados, Receita Total);
+  - Divisão em duas colunas: formulários em cards brancos com bordas suaves à esquerda e tabela com abas à direita;
+  - Pílulas/badges coloridos com cantos arredondados na tabela para identificar o status do bilhete (Azul para Disponível, Verde Esmeralda para Utilizado, Vermelho para Cancelado);
+  - Botões modernos com efeito hover e tipografia Segoe UI em toda a aplicação.
+- **Refinamento aplicado:**
+  Ajuste das dimensões fixas de campos para evitar estiramento vertical e eliminação de caracteres especiais com risco de renderização incorreta (tofu) no Windows. Inclusão da captura de tela da nova interface no README.md.

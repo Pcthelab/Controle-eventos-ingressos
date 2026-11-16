@@ -8,282 +8,475 @@ import br.com.eventos.model.IngressoMeia;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Interface Gráfica desenvolvida em javax.swing.* (Requisitos POO_07 a POO_10).
- * Gerencia a venda, validação em catraca, cancelamento e relatórios de público
- * mantendo todos os dados 100% em memória RAM (List<Ingresso>).
- * Implementa ActionListener e WindowListener diretamente, conforme padronização das aulas.
+ * Interface Gráfica Moderna e Funcional em Java Swing (javax.swing.*).
+ * Desenvolvida para a Avaliação P2 de POO (Prof. Maromo - FATEC Mogi Mirim).
+ * Atende com rigor a todas as regras da disciplina:
+ * - 100% em memória RAM (List<Ingresso>)
+ * - Implementa ActionListener e WindowListener diretamente
+ * - Botões padronizados: Cadastrar, Pesquisar, Processar Operação, Ordenar, Sair
+ * - JTextArea para relatórios e JOptionPane para mensagens de erro/alerta
+ * - Visual moderno, limpo e profissional com cards, badges e tipografia Segoe UI.
  */
 public class TelaEventos extends JFrame implements ActionListener, WindowListener {
 
     private static final long serialVersionUID = 1L;
 
-    // Cores e Estilos Visuais
-    private static final Color FUNDO = new Color(245, 247, 250);
-    private static final Color AZUL_PRIMARIO = new Color(35, 89, 145);
-    private static final Color TEXTO_ESCURO = new Color(37, 48, 61);
+    // Paleta de Cores Moderna (Estilo Tailwind / Clean Slate)
+    private static final Color COR_FUNDO = new Color(248, 250, 252);        // Slate 50
+    private static final Color COR_HEADER = new Color(15, 23, 42);          // Slate 900
+    private static final Color COR_PRIMARIA = new Color(37, 99, 235);       // Blue 600
+    private static final Color COR_SUCESSO = new Color(16, 185, 129);       // Emerald 500
+    private static final Color COR_PERIGO = new Color(239, 68, 68);         // Rose 500
+    private static final Color COR_AMBAR = new Color(245, 158, 11);         // Amber 500
+    private static final Color COR_TEXTO = new Color(15, 23, 42);           // Slate 900
+    private static final Color COR_MUTED = new Color(100, 116, 139);        // Slate 500
+    private static final Color COR_BORDA = new Color(226, 232, 240);        // Slate 200
 
-    // Persistência 100% em memória RAM (Requisito POO_07)
+    // Persistência 100% em memória RAM (Requisito da P2)
     private final List<Ingresso> listaIngressos = new ArrayList<>();
-    private int contadorSequencialCodigo = 1;
+    private int contadorSequencial = 1;
 
-    // Componentes de Formulário
-    private JTextField txtCodigo;
+    // Componentes de Entrada
     private JTextField txtEvento;
     private JTextField txtParticipante;
     private JTextField txtValorInteira;
     private JComboBox<String> cbTipo;
     private JTextField txtDocumentoMeia;
     private JLabel lblDocumentoMeia;
+    private JTextField txtCodigoOperacao;
 
-    // Botões de Ação Exigidos no PDF (Pág. 3)
+    // Botões de Ação Obrigatórios pelo PDF
     private JButton btnCadastrar;
     private JButton btnPesquisar;
     private JButton btnProcessarOperacao;
     private JButton btnCancelar;
     private JButton btnOrdenar;
-    private JButton btnRelatorioPublico;
+    private JButton btnRelatorio;
     private JButton btnLimpar;
     private JButton btnSair;
 
-    // Visualização dos Dados (JTable + JTextArea para Relatórios)
-    private JTabbedPane abasExibicao;
+    // Componentes de Visualização
+    private JTabbedPane abasVisualizacao;
     private DefaultTableModel modeloTabela;
     private JTable tabela;
     private JTextArea txtRelatorioPublico;
-    private JLabel lblResumoBarra;
+
+    // Cards de Métricas em Tempo Real (KPIs)
+    private CardKPI kpiTotal;
+    private CardKPI kpiPresentes;
+    private CardKPI kpiCancelados;
+    private CardKPI kpiReceita;
 
     public TelaEventos() {
-        super("Sistema de Controle de Eventos e Venda de Ingressos - P2 POO (Prof. Maromo)");
+        super("Bilheteria & Controle de Eventos - Sistema Orientado a Objetos (POO)");
         configurarJanela();
-        montarComponentes();
-        gerarDadosIniciaisDemonstracao();
-        atualizarVisualizacoes();
+        construirInterface();
+        inicializarDadosDemonstracao();
+        atualizarTodaInterface();
     }
 
     private void configurarJanela() {
-        this.setSize(1080, 740);
-        this.setMinimumSize(new Dimension(900, 640));
-        this.setLocationRelativeTo(null);
-        // Interceptado pelo WindowListener
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        this.addWindowListener(this);
+        setSize(1200, 800);
+        setMinimumSize(new Dimension(1040, 720));
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(this);
     }
 
-    private void montarComponentes() {
-        Container container = this.getContentPane();
-        container.setLayout(new BorderLayout(0, 12));
-        ((JPanel) container).setBackground(FUNDO);
-        ((JPanel) container).setBorder(new EmptyBorder(16, 20, 16, 20));
+    private void construirInterface() {
+        JPanel painelPrincipal = new JPanel(new BorderLayout(0, 14));
+        painelPrincipal.setBackground(COR_FUNDO);
+        painelPrincipal.setBorder(new EmptyBorder(16, 18, 16, 18));
+        setContentPane(painelPrincipal);
 
-        // 1. Cabeçalho Superior
-        JPanel painelCabecalho = new JPanel(new BorderLayout(8, 4));
-        painelCabecalho.setBackground(AZUL_PRIMARIO);
-        painelCabecalho.setBorder(new EmptyBorder(12, 16, 12, 16));
+        // 1. Barra de Topo Moderna
+        painelPrincipal.add(criarBarraCabecalho(), BorderLayout.NORTH);
 
-        JLabel lblTitulo = new JLabel("CONTROLE DE EVENTOS & BILHETERIA DIGITAL");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitulo.setForeground(Color.WHITE);
-
-        JLabel lblSubtitulo = new JLabel("Tema 08 - Venda de Bilhetes, Portaria com Catraca, Cancelamento e Relatórios em RAM");
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblSubtitulo.setForeground(new Color(210, 230, 255));
-
-        painelCabecalho.add(lblTitulo, BorderLayout.NORTH);
-        painelCabecalho.add(lblSubtitulo, BorderLayout.SOUTH);
-        container.add(painelCabecalho, BorderLayout.NORTH);
-
-        // 2. Painel Central: Formulários e Ações
-        JPanel painelCentral = new JPanel(new BorderLayout(0, 10));
+        // 2. Área Central Dividida (Esquerda: Formulários / Direita: KPIs + Tabela / Relatório)
+        JPanel painelCentral = new JPanel(new BorderLayout(14, 0));
         painelCentral.setOpaque(false);
 
-        // 2.1 Formulário de Dados
-        JPanel painelFormulario = new JPanel(new GridBagLayout());
-        painelFormulario.setBackground(Color.WHITE);
-        painelFormulario.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 226, 234)),
-                new EmptyBorder(12, 16, 12, 16)));
+        painelCentral.add(criarColunaEsquerdaFormularios(), BorderLayout.WEST);
+        painelCentral.add(criarColunaDireitaVisualizacoes(), BorderLayout.CENTER);
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4, 6, 4, 6);
-        c.fill = GridBagConstraints.HORIZONTAL;
+        painelPrincipal.add(painelCentral, BorderLayout.CENTER);
+    }
 
-        // Linha 0: Título do bloco
-        c.gridx = 0; c.gridy = 0; c.gridwidth = 4;
-        JLabel lblSecaoVenda = new JLabel("Formulário de Cadastro e Operações:");
-        lblSecaoVenda.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblSecaoVenda.setForeground(TEXTO_ESCURO);
-        painelFormulario.add(lblSecaoVenda, c);
-        c.gridwidth = 1;
+    /**
+     * Cabeçalho moderno com visual escuro elegante, título e status do sistema.
+     */
+    private JPanel criarBarraCabecalho() {
+        JPanel header = new JPanel(new BorderLayout(10, 5)) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(COR_HEADER);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        header.setOpaque(false);
+        header.setBorder(new EmptyBorder(14, 20, 14, 20));
 
-        // Linha 1: Evento e Participante
-        c.gridy = 1;
-        adicionarCampoGrid(painelFormulario, c, "Nome do Evento:", txtEvento = new JTextField(18), 0);
-        adicionarCampoGrid(painelFormulario, c, "Nome do Participante:", txtParticipante = new JTextField(18), 2);
+        // Título e Subtítulo
+        JPanel painelTitulos = new JPanel(new GridLayout(2, 1, 0, 2));
+        painelTitulos.setOpaque(false);
 
-        // Linha 2: Valor Inteira e Tipo de Ingresso
-        c.gridy = 2;
-        adicionarCampoGrid(painelFormulario, c, "Valor Base Inteira (R$):", txtValorInteira = new JTextField(12), 0);
-        cbTipo = new JComboBox<>(new String[]{"Inteira", "Meia-entrada (50%)"});
-        cbTipo.addActionListener(e -> {
-            boolean ehMeia = cbTipo.getSelectedIndex() == 1;
-            txtDocumentoMeia.setEnabled(ehMeia);
-            lblDocumentoMeia.setEnabled(ehMeia);
-        });
-        adicionarCampoGrid(painelFormulario, c, "Tipo de Ingresso:", cbTipo, 2);
+        JLabel lblTitulo = new JLabel("CONTROLE DE EVENTOS & BILHETERIA DIGITAL");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 19));
+        lblTitulo.setForeground(Color.WHITE);
 
-        // Linha 3: Documento Comprovante (específico para Meia) e Código para busca/baixa
-        c.gridy = 3;
-        lblDocumentoMeia = new JLabel("Comprovante Meia-entrada:");
+        JLabel lblSubtitulo = new JLabel("Tema 08 • Venda de Ingressos, Conferência na Catraca, Cancelamento e Relatórios em RAM");
+        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSubtitulo.setForeground(new Color(148, 163, 184)); // Slate 400
+
+        painelTitulos.add(lblTitulo);
+        painelTitulos.add(lblSubtitulo);
+        header.add(painelTitulos, BorderLayout.WEST);
+
+        // Badge lateral de status
+        JPanel painelStatus = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        painelStatus.setOpaque(false);
+
+        JLabel lblBadge = new JLabel("● SESSÃO ATIVA (100% RAM)");
+        lblBadge.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblBadge.setForeground(new Color(74, 222, 128)); // Emerald 400
+        painelStatus.add(lblBadge);
+
+        header.add(painelStatus, BorderLayout.EAST);
+        return header;
+    }
+
+    /**
+     * Coluna da esquerda: Cards para Venda (Cadastro) e Operações de Portaria (Baixa/Cancelamento).
+     */
+    private JPanel criarColunaEsquerdaFormularios() {
+        JPanel coluna = new JPanel();
+        coluna.setLayout(new BoxLayout(coluna, BoxLayout.Y_AXIS));
+        coluna.setOpaque(false);
+        coluna.setPreferredSize(new Dimension(390, 0));
+
+        // --- CARD 1: FORMULÁRIO DE VENDA (CADASTRAR) ---
+        PainelCard cardVenda = new PainelCard();
+        cardVenda.setLayout(new BoxLayout(cardVenda, BoxLayout.Y_AXIS));
+
+        JLabel tituloVenda = new JLabel("Nova Venda de Ingresso");
+        tituloVenda.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        tituloVenda.setForeground(COR_TEXTO);
+        tituloVenda.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cardVenda.add(tituloVenda);
+        cardVenda.add(Box.createVerticalStrut(10));
+
+        cardVenda.add(criarRotuloCampo("Nome do Evento:"));
+        txtEvento = criarCampoTexto();
+        cardVenda.add(txtEvento);
+        cardVenda.add(Box.createVerticalStrut(8));
+
+        cardVenda.add(criarRotuloCampo("Nome do Participante:"));
+        txtParticipante = criarCampoTexto();
+        cardVenda.add(txtParticipante);
+        cardVenda.add(Box.createVerticalStrut(8));
+
+        JPanel linhaTipoValor = new JPanel(new GridLayout(1, 2, 8, 0));
+        linhaTipoValor.setOpaque(false);
+        linhaTipoValor.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
+
+        JPanel pTipo = new JPanel(new BorderLayout(0, 4));
+        pTipo.setOpaque(false);
+        pTipo.add(criarRotuloCampo("Tipo de Bilhete:"), BorderLayout.NORTH);
+        cbTipo = new JComboBox<>(new String[]{"Inteira", "Meia-Entrada (50%)"});
+        cbTipo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        cbTipo.setBackground(Color.WHITE);
+        cbTipo.setPreferredSize(new Dimension(100, 32));
+        cbTipo.addActionListener(e -> alternarCampoDocumentoMeia());
+        pTipo.add(cbTipo, BorderLayout.CENTER);
+        linhaTipoValor.add(pTipo);
+
+        JPanel pValor = new JPanel(new BorderLayout(0, 4));
+        pValor.setOpaque(false);
+        pValor.add(criarRotuloCampo("Valor Inteira (R$):"), BorderLayout.NORTH);
+        txtValorInteira = criarCampoTexto();
+        pValor.add(txtValorInteira, BorderLayout.CENTER);
+        linhaTipoValor.add(pValor);
+
+        linhaTipoValor.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cardVenda.add(linhaTipoValor);
+        cardVenda.add(Box.createVerticalStrut(8));
+
+        lblDocumentoMeia = criarRotuloCampo("Comprovante Meia-Entrada:");
         lblDocumentoMeia.setEnabled(false);
-        txtDocumentoMeia = new JTextField("Carteirinha de Estudante / DNE", 18);
+        cardVenda.add(lblDocumentoMeia);
+        txtDocumentoMeia = criarCampoTexto();
+        txtDocumentoMeia.setText("Carteirinha de Estudante / DNE");
         txtDocumentoMeia.setEnabled(false);
-        adicionarCampoCustomizado(painelFormulario, c, lblDocumentoMeia, txtDocumentoMeia, 0);
+        cardVenda.add(txtDocumentoMeia);
+        cardVenda.add(Box.createVerticalStrut(12));
 
-        adicionarCampoGrid(painelFormulario, c, "Código do Bilhete (Operações):", txtCodigo = new JTextField(10), 2);
+        btnCadastrar = new BotaoModerno("+ Cadastrar (Registrar Venda)", COR_PRIMARIA, Color.WHITE);
+        btnCadastrar.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnCadastrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnCadastrar.addActionListener(this);
+        cardVenda.add(btnCadastrar);
 
-        painelCentral.add(painelFormulario, BorderLayout.NORTH);
+        coluna.add(cardVenda);
+        coluna.add(Box.createVerticalStrut(12));
 
-        // 2.2 Barra de Botões com as ações padronizadas pelo PDF
-        JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
-        painelBotoes.setOpaque(false);
+        // --- CARD 2: OPERAÇÕES DE PORTARIA & CONSULTA ---
+        PainelCard cardOperacoes = new PainelCard();
+        cardOperacoes.setLayout(new BoxLayout(cardOperacoes, BoxLayout.Y_AXIS));
 
-        btnCadastrar = criarBotao("Cadastrar (Venda)", new Color(35, 89, 145), Color.WHITE);
-        btnPesquisar = criarBotao("Pesquisar", new Color(230, 238, 248), TEXTO_ESCURO);
-        btnProcessarOperacao = criarBotao("Processar Operação (Catraca)", new Color(222, 243, 230), new Color(28, 107, 60));
-        btnCancelar = criarBotao("Cancelar Ingresso", new Color(252, 233, 231), new Color(175, 45, 36));
-        btnOrdenar = criarBotao("Ordenar (Código)", new Color(255, 248, 220), new Color(130, 95, 20));
-        btnRelatorioPublico = criarBotao("Relatório de Público", new Color(235, 230, 250), new Color(85, 45, 140));
-        btnLimpar = criarBotao("Limpar", new Color(240, 240, 240), TEXTO_ESCURO);
-        btnSair = criarBotao("Sair", new Color(250, 220, 220), new Color(150, 30, 30));
+        JLabel tituloOperacoes = new JLabel("Operações de Portaria & Catraca");
+        tituloOperacoes.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        tituloOperacoes.setForeground(COR_TEXTO);
+        tituloOperacoes.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cardOperacoes.add(tituloOperacoes);
+        cardOperacoes.add(Box.createVerticalStrut(10));
 
-        painelCentral.add(painelBotoes, BorderLayout.SOUTH);
-        container.add(painelCentral, BorderLayout.CENTER);
+        cardOperacoes.add(criarRotuloCampo("Código do Bilhete (para operações):"));
 
-        // 3. Painel Inferior com Abas: Tabela de Dados e JTextArea de Relatório
-        abasExibicao = new JTabbedPane();
-        abasExibicao.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        // Painel para campo de código e botão pesquisar alinhados com altura fixa
+        JPanel linhaCodigoBusca = new JPanel(new BorderLayout(8, 0));
+        linhaCodigoBusca.setOpaque(false);
+        linhaCodigoBusca.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        linhaCodigoBusca.setPreferredSize(new Dimension(300, 34));
+
+        txtCodigoOperacao = criarCampoTexto();
+        txtCodigoOperacao.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        linhaCodigoBusca.add(txtCodigoOperacao, BorderLayout.CENTER);
+
+        btnPesquisar = new BotaoModerno("Pesquisar", new Color(241, 245, 249), COR_TEXTO);
+        btnPesquisar.addActionListener(this);
+        linhaCodigoBusca.add(btnPesquisar, BorderLayout.EAST);
+
+        linhaCodigoBusca.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cardOperacoes.add(linhaCodigoBusca);
+        cardOperacoes.add(Box.createVerticalStrut(12));
+
+        // Botões de Ação da Portaria
+        btnProcessarOperacao = new BotaoModerno("Processar Operação (Catraca)", COR_SUCESSO, Color.WHITE);
+        btnProcessarOperacao.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnProcessarOperacao.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        btnProcessarOperacao.addActionListener(this);
+        cardOperacoes.add(btnProcessarOperacao);
+        cardOperacoes.add(Box.createVerticalStrut(8));
+
+        JPanel linhaAuxiliar = new JPanel(new GridLayout(1, 2, 8, 0));
+        linhaAuxiliar.setOpaque(false);
+        linhaAuxiliar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+
+        btnCancelar = new BotaoModerno("Cancelar", new Color(254, 226, 226), COR_PERIGO);
+        btnCancelar.addActionListener(this);
+        linhaAuxiliar.add(btnCancelar);
+
+        btnLimpar = new BotaoModerno("Limpar", new Color(241, 245, 249), COR_MUTED);
+        btnLimpar.addActionListener(this);
+        linhaAuxiliar.add(btnLimpar);
+
+        linhaAuxiliar.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cardOperacoes.add(linhaAuxiliar);
+
+        coluna.add(cardOperacoes);
+        return coluna;
+    }
+
+    /**
+     * Coluna da direita: Indicadores (KPIs) no topo e Abas (Tabela + Relatório JTextArea) com barra de ações.
+     */
+    private JPanel criarColunaDireitaVisualizacoes() {
+        JPanel painel = new JPanel(new BorderLayout(0, 12));
+        painel.setOpaque(false);
+
+        // 1. Linha de KPIs (Cards de Resumo Estatístico)
+        JPanel painelKPIs = new JPanel(new GridLayout(1, 4, 10, 0));
+        painelKPIs.setOpaque(false);
+        painelKPIs.setPreferredSize(new Dimension(0, 68));
+
+        kpiTotal = new CardKPI("TOTAL EMITIDOS", "0", COR_PRIMARIA);
+        kpiPresentes = new CardKPI("PÚBLICO CATRACA", "0", COR_SUCESSO);
+        kpiCancelados = new CardKPI("CANCELADOS", "0", COR_PERIGO);
+        kpiReceita = new CardKPI("RECEITA TOTAL", "R$ 0,00", new Color(124, 58, 237));
+
+        painelKPIs.add(kpiTotal);
+        painelKPIs.add(kpiPresentes);
+        painelKPIs.add(kpiCancelados);
+        painelKPIs.add(kpiReceita);
+        painel.add(painelKPIs, BorderLayout.NORTH);
+
+        // 2. Centro: Abas com Tabela e JTextArea
+        PainelCard cardAbas = new PainelCard();
+        cardAbas.setLayout(new BorderLayout(0, 8));
+
+        // Barra de Ferramentas acima das abas com layout sem colisões
+        JPanel barraSuperiorAbas = new JPanel(new BorderLayout(8, 0));
+        barraSuperiorAbas.setOpaque(false);
+
+        JLabel lblDica = new JLabel("Dica: Clique em qualquer linha para preencher o código");
+        lblDica.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        lblDica.setForeground(COR_MUTED);
+        barraSuperiorAbas.add(lblDica, BorderLayout.WEST);
+
+        JPanel botoesAcao = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        botoesAcao.setOpaque(false);
+
+        btnOrdenar = new BotaoModerno("Ordenar (Código)", new Color(254, 243, 199), new Color(180, 83, 9));
+        btnOrdenar.addActionListener(this);
+        botoesAcao.add(btnOrdenar);
+
+        btnRelatorio = new BotaoModerno("Relatório de Público", new Color(243, 232, 255), new Color(126, 34, 206));
+        btnRelatorio.addActionListener(this);
+        botoesAcao.add(btnRelatorio);
+
+        btnSair = new BotaoModerno("Sair", new Color(254, 226, 226), COR_PERIGO);
+        btnSair.addActionListener(this);
+        botoesAcao.add(btnSair);
+
+        barraSuperiorAbas.add(botoesAcao, BorderLayout.EAST);
+        cardAbas.add(barraSuperiorAbas, BorderLayout.NORTH);
+
+        // Configuração das Abas
+        abasVisualizacao = new JTabbedPane();
+        abasVisualizacao.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         // Aba 1: Tabela Dinâmica
-        modeloTabela = new DefaultTableModel(new Object[]{"Código", "Evento", "Participante", "Tipo", "Valor (R$)", "Status", "Data/Hora Acesso"}, 0) {
+        modeloTabela = new DefaultTableModel(new Object[]{"Código", "Evento", "Participante", "Tipo", "Valor (R$)", "Status do Bilhete", "Acesso Catraca"}, 0) {
             private static final long serialVersionUID = 1L;
-            @Override public boolean isCellEditable(int row, int column) { return false; }
+            @Override public boolean isCellEditable(int r, int c) { return false; }
             @Override public Class<?> getColumnClass(int col) { return col == 0 ? Integer.class : String.class; }
         };
         tabela = new JTable(modeloTabela);
-        tabela.setRowHeight(28);
-        tabela.setFillsViewportHeight(true);
-        tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        tabela.setSelectionBackground(new Color(218, 234, 252));
-        tabela.setSelectionForeground(TEXTO_ESCURO);
+        configurarEstiloTabela(tabela);
 
-        int[] larguras = {70, 180, 180, 120, 110, 160, 160};
-        for (int i = 0; i < larguras.length; i++) {
-            tabela.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
-        }
-
-        // Ao clicar em uma linha da tabela, preenche o campo de código automaticamente
         tabela.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int linha = tabela.getSelectedRow();
                 if (linha >= 0) {
-                    txtCodigo.setText(String.valueOf(tabela.getValueAt(linha, 0)));
+                    txtCodigoOperacao.setText(String.valueOf(tabela.getValueAt(linha, 0)));
                 }
             }
         });
 
         JScrollPane scrollTabela = new JScrollPane(tabela);
-        abasExibicao.addTab("📋 Ingressos Registrados (Tabela)", scrollTabela);
+        scrollTabela.setBorder(new LineBorder(COR_BORDA, 1));
+        scrollTabela.getViewport().setBackground(Color.WHITE);
+        abasVisualizacao.addTab("Grade de Ingressos (Tabela)", scrollTabela);
 
-        // Aba 2: JTextArea exigida para Relatórios
-        txtRelatorioPublico = new JTextArea(14, 80);
+        // Aba 2: JTextArea Exigida pelo PDF para Relatórios
+        txtRelatorioPublico = new JTextArea();
         txtRelatorioPublico.setEditable(false);
         txtRelatorioPublico.setFont(new Font("Consolas", Font.PLAIN, 12));
-        txtRelatorioPublico.setBackground(new Color(253, 254, 255));
+        txtRelatorioPublico.setBackground(new Color(250, 252, 255));
+        txtRelatorioPublico.setBorder(new EmptyBorder(12, 14, 12, 14));
+
         JScrollPane scrollRelatorio = new JScrollPane(txtRelatorioPublico);
-        abasExibicao.addTab("📊 Relatório de Público & Extrato (JTextArea)", scrollRelatorio);
+        scrollRelatorio.setBorder(new LineBorder(COR_BORDA, 1));
+        abasVisualizacao.addTab("Extrato & Relatório Executivo (JTextArea)", scrollRelatorio);
 
-        JPanel painelSul = new JPanel(new BorderLayout(5, 5));
-        painelSul.setOpaque(false);
-        painelSul.add(abasExibicao, BorderLayout.CENTER);
+        cardAbas.add(abasVisualizacao, BorderLayout.CENTER);
+        painel.add(cardAbas, BorderLayout.CENTER);
 
-        lblResumoBarra = new JLabel();
-        lblResumoBarra.setBorder(new EmptyBorder(6, 4, 2, 4));
-        lblResumoBarra.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblResumoBarra.setForeground(TEXTO_ESCURO);
-        painelSul.add(lblResumoBarra, BorderLayout.SOUTH);
-
-        container.add(painelSul, BorderLayout.SOUTH);
+        return painel;
     }
 
-    private void adicionarCampoGrid(JPanel painel, GridBagConstraints c, String rotulo, JComponent campo, int coluna) {
-        c.gridx = coluna;
-        c.weightx = 0;
-        JLabel label = new JLabel(rotulo);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        label.setForeground(new Color(70, 80, 95));
-        painel.add(label, c);
+    private void configurarEstiloTabela(JTable tab) {
+        tab.setRowHeight(36);
+        tab.setFillsViewportHeight(true);
+        tab.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tab.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tab.setShowVerticalLines(false);
+        tab.setShowHorizontalLines(true);
+        tab.setGridColor(new Color(241, 245, 249));
+        tab.setSelectionBackground(new Color(224, 238, 254)); // Soft blue highlight
+        tab.setSelectionForeground(COR_TEXTO);
 
-        c.gridx = coluna + 1;
-        c.weightx = 1;
-        campo.setPreferredSize(new Dimension(170, 28));
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        painel.add(campo, c);
+        JTableHeader th = tab.getTableHeader();
+        th.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        th.setBackground(new Color(241, 245, 249));
+        th.setForeground(new Color(71, 85, 105));
+        th.setPreferredSize(new Dimension(0, 36));
+        th.setReorderingAllowed(false);
+
+        // Larguras proporcionais
+        int[] larguras = {65, 175, 175, 110, 110, 160, 160};
+        for (int i = 0; i < larguras.length; i++) {
+            tab.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
+        }
+
+        // Renderizador centralizado para Código e Alinhado para Valores
+        DefaultTableCellRenderer centro = new DefaultTableCellRenderer();
+        centro.setHorizontalAlignment(SwingConstants.CENTER);
+        tab.getColumnModel().getColumn(0).setCellRenderer(centro);
+        tab.getColumnModel().getColumn(4).setCellRenderer(centro);
+        tab.getColumnModel().getColumn(6).setCellRenderer(centro);
+
+        // Renderizador de Badges Coloridos na Coluna Status (Tailwind Style)
+        tab.getColumnModel().getColumn(5).setCellRenderer(new BadgeRenderer());
     }
 
-    private void adicionarCampoCustomizado(JPanel painel, GridBagConstraints c, JLabel label, JComponent campo, int coluna) {
-        c.gridx = coluna;
-        c.weightx = 0;
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        label.setForeground(new Color(70, 80, 95));
-        painel.add(label, c);
-
-        c.gridx = coluna + 1;
-        c.weightx = 1;
-        campo.setPreferredSize(new Dimension(170, 28));
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        painel.add(campo, c);
+    private void alternarCampoDocumentoMeia() {
+        boolean ehMeia = cbTipo.getSelectedIndex() == 1;
+        lblDocumentoMeia.setEnabled(ehMeia);
+        txtDocumentoMeia.setEnabled(ehMeia);
+        if (ehMeia) {
+            txtDocumentoMeia.requestFocusInWindow();
+        }
     }
 
-    private JButton criarBotao(String texto, Color fundo, Color frente) {
-        JButton btn = new JButton(texto);
-        btn.setBackground(fundo);
-        btn.setForeground(frente);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(fundo.darker(), 1),
-                new EmptyBorder(7, 12, 7, 12)));
-        btn.addActionListener(this);
-        return btn;
+    private JLabel criarRotuloCampo(String texto) {
+        JLabel rotulo = new JLabel(texto);
+        rotulo.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        rotulo.setForeground(new Color(71, 85, 105)); // Slate 600
+        rotulo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return rotulo;
     }
 
-    /**
-     * Gera dados iniciais para facilitar a demonstração imediata
-     * ao professor e teste de ordenação e catraca.
-     */
-    private void gerarDadosIniciaisDemonstracao() {
-        Ingresso i1 = new IngressoInteira(contadorSequencialCodigo++, "Festival de Rock FATEC", "Carlos Eduardo", 160.00);
-        IngressoMeia i2 = new IngressoMeia(contadorSequencialCodigo++, "Festival de Rock FATEC", "Mariana Silva", 80.00, "Carteira Estudantil Fatec #4821");
-        Ingresso i3 = new IngressoInteira(contadorSequencialCodigo++, "Festival de Rock FATEC", "Lucas Ferreira", 160.00);
+    private JTextField criarCampoTexto() {
+        JTextField campo = new JTextField();
+        campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        campo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        campo.setPreferredSize(new Dimension(100, 32));
+        campo.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(COR_BORDA, 1),
+                new EmptyBorder(3, 8, 3, 8)));
+
+        campo.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                campo.setBorder(BorderFactory.createCompoundBorder(
+                        new LineBorder(COR_PRIMARIA, 2),
+                        new EmptyBorder(2, 7, 2, 7)));
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                campo.setBorder(BorderFactory.createCompoundBorder(
+                        new LineBorder(COR_BORDA, 1),
+                        new EmptyBorder(3, 8, 3, 8)));
+            }
+        });
+        return campo;
+    }
+
+    private void inicializarDadosDemonstracao() {
+        Ingresso i1 = new IngressoInteira(contadorSequencial++, "Festival de Rock FATEC", "Carlos Eduardo", 160.00);
+        IngressoMeia i2 = new IngressoMeia(contadorSequencial++, "Festival de Rock FATEC", "Mariana Silva", 80.00, "DNE #4821 - Estudante");
+        Ingresso i3 = new IngressoInteira(contadorSequencial++, "Festival de Rock FATEC", "Lucas Ferreira", 160.00);
 
         try {
-            // Simula um acesso já realizado para enriquecer o extrato
             i2.validarAcessoCatraca();
-            // Simula um cancelamento
             i3.cancelar();
         } catch (IngressoInvalidoException ignored) {}
 
@@ -296,82 +489,60 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     // REGRAS DE NEGÓCIO E AÇÕES DOS BOTÕES (POO_07 A POO_10)
     // =========================================================================
 
-    /**
-     * Operação 1: Cadastrar (Venda de Bilhetes).
-     * Trata validações e NumberFormatException ao converter valores.
-     */
     private void acaoCadastrar() {
         String evento = txtEvento.getText().trim();
         String participante = txtParticipante.getText().trim();
         String valorStr = txtValorInteira.getText().trim();
 
         if (evento.isEmpty() || participante.isEmpty() || valorStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Por favor, preencha todos os campos obrigatórios: Evento, Participante e Valor da Inteira.",
-                    "Dados Obrigatórios",
-                    JOptionPane.WARNING_MESSAGE);
+            exibirAviso("Por favor, preencha os campos obrigatórios:\n• Nome do Evento\n• Participante\n• Valor da Inteira", "Campos Pendentes");
             return;
         }
 
         final double valorInteira;
         try {
-            // Requisito POO_08: Tratamento criterioso de NumberFormatException
             valorInteira = converterValorMoeda(valorStr);
-            if (valorInteira <= 0) {
-                throw new NumberFormatException("Valor deve ser positivo");
-            }
+            if (valorInteira <= 0) throw new NumberFormatException();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Valor da inteira inválido: '" + valorStr + "'.\nDigite um número positivo (ex: 120,00 ou 150.50).",
-                    "Erro de Conversão Numérica",
-                    JOptionPane.ERROR_MESSAGE);
+            exibirErro("Valor informado ('" + valorStr + "') é inválido!\nDigite um número positivo (ex: 120,00 ou 150.00).", "Erro Numérico");
             txtValorInteira.requestFocusInWindow();
             return;
         }
 
-        Ingresso novoIngresso;
-        int codigo = contadorSequencialCodigo++;
+        Ingresso novo;
+        int codigo = contadorSequencial++;
         boolean ehMeia = cbTipo.getSelectedIndex() == 1;
 
         if (ehMeia) {
-            // Polimorfismo e chamada do método estático de interface
             double valorMeia = Validavel.calcularValorMeia(valorInteira);
             String doc = txtDocumentoMeia.getText().trim();
-            novoIngresso = new IngressoMeia(codigo, evento, participante, valorMeia, doc);
+            novo = new IngressoMeia(codigo, evento, participante, valorMeia, doc);
         } else {
-            novoIngresso = new IngressoInteira(codigo, evento, participante, valorInteira);
+            novo = new IngressoInteira(codigo, evento, participante, valorInteira);
         }
 
-        // Armazenamento 100% em memória RAM
-        listaIngressos.add(novoIngresso);
+        listaIngressos.add(novo);
+        atualizarTodaInterface();
+        selecionarLinhaPorCodigo(novo.getCodigo());
 
         JOptionPane.showMessageDialog(this,
-                "Venda registrada com sucesso!\n"
-                        + "Código do Bilhete: #" + novoIngresso.getCodigo() + "\n"
-                        + "Tipo: " + novoIngresso.getTipo() + "\n"
-                        + "Valor: " + novoIngresso.formatarValor(novoIngresso.getValor()) + "\n"
-                        + "Participante: " + novoIngresso.getNomeParticipante(),
-                "Venda Concluída",
+                "Venda registrada com sucesso!\n\n"
+                        + "• Código: #" + novo.getCodigo() + "\n"
+                        + "• Tipo: " + novo.getTipo() + "\n"
+                        + "• Valor: " + novo.formatarValor(novo.getValor()) + "\n"
+                        + "• Participante: " + novo.getNomeParticipante(),
+                "Sucesso na Bilheteria",
                 JOptionPane.INFORMATION_MESSAGE);
 
         limparCamposVenda();
-        atualizarVisualizacoes();
-        selecionarIngressoNaTabela(novoIngresso);
     }
 
-    /**
-     * Operação 2: Pesquisar ingresso por Código ou por Nome do Participante.
-     * Trata NumberFormatException ao converter o código.
-     */
     private void acaoPesquisar() {
-        String codTexto = txtCodigo.getText().trim();
+        String codTexto = txtCodigoOperacao.getText().trim();
         String participanteTexto = txtParticipante.getText().trim();
 
         if (codTexto.isEmpty() && participanteTexto.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Informe o Código do Ingresso ou o Nome do Participante para pesquisar.",
-                    "Pesquisar",
-                    JOptionPane.WARNING_MESSAGE);
+            exibirAviso("Digite o Código do Bilhete ou o Nome do Participante para pesquisar.", "Pesquisar");
             return;
         }
 
@@ -379,7 +550,6 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
 
         if (!codTexto.isEmpty()) {
             try {
-                // Requisito POO_08: Tratamento explícito de NumberFormatException
                 int cod = Integer.parseInt(codTexto);
                 for (Ingresso ing : listaIngressos) {
                     if (ing.getCodigo() == cod) {
@@ -388,10 +558,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
                     }
                 }
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Código inválido: '" + codTexto + "'. Informe um número inteiro.",
-                        "Erro Numérico",
-                        JOptionPane.ERROR_MESSAGE);
+                exibirErro("Código inválido: '" + codTexto + "'. Digite apenas números inteiros.", "Formato Inválido");
                 return;
             }
         }
@@ -406,78 +573,63 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
 
         if (encontrado != null) {
-            preencherFormularioComIngresso(encontrado);
-            selecionarIngressoNaTabela(encontrado);
+            carregarDadosNoFormulario(encontrado);
+            selecionarLinhaPorCodigo(encontrado.getCodigo());
             JOptionPane.showMessageDialog(this,
-                    "Ingresso Localizado:\n" + encontrado,
-                    "Sucesso na Pesquisa",
+                    "Bilhete Localizado:\n\n" + encontrado,
+                    "Resultado da Pesquisa",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this,
-                    "Nenhum ingresso encontrado com os critérios informados.",
+                    "Nenhum ingresso encontrado para a busca informada.",
                     "Não Encontrado",
                     JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    /**
-     * Operação 3: Processar Operação (Conferência na Portaria e Baixa de Acesso via Catraca).
-     * Aplica o método polimórfico validarAcessoCatraca() da interface Validavel
-     * e captura a Checked Exception IngressoInvalidoException!
-     */
     private void acaoProcessarOperacao() {
-        Ingresso ingresso = obterIngressoPorCodigoOuSelecao();
-        if (ingresso == null) return;
+        Ingresso ing = obterIngressoSelecionado();
+        if (ing == null) return;
 
-        // Exibe orientação da portaria (método polimórfico)
-        String instrucao = ingresso.obterInstrucaoCatraca();
+        String orientacao = ing.obterInstrucaoCatraca();
 
-        int confirmacao = JOptionPane.showConfirmDialog(this,
-                "CONFERÊNCIA DE PORTARIA / CATRACA:\n\n"
-                        + "Bilhete: #" + ingresso.getCodigo() + " (" + ingresso.getTipo() + ")\n"
-                        + "Participante: " + ingresso.getNomeParticipante() + "\n"
-                        + "Evento: " + ingresso.getEvento() + "\n"
-                        + "Orientação: " + instrucao + "\n\n"
-                        + "Confirmar liberação da catraca e dar baixa de acesso?",
-                "Processar Operação - Catraca",
+        int resposta = JOptionPane.showConfirmDialog(this,
+                "CONFERÊNCIA DE PORTARIA:\n\n"
+                        + "• Bilhete: #" + ing.getCodigo() + " (" + ing.getTipo() + ")\n"
+                        + "• Participante: " + ing.getNomeParticipante() + "\n"
+                        + "• Evento: " + ing.getEvento() + "\n"
+                        + "• Instrução: " + orientacao + "\n\n"
+                        + "Confirmar destravamento da catraca e validar acesso?",
+                "Controle de Catraca",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 
-        if (confirmacao != JOptionPane.YES_OPTION) return;
+        if (resposta != JOptionPane.YES_OPTION) return;
 
         try {
-            // REQUISITO POO_10 & POO_08: Chamada de método polimórfico com Checked Exception
-            ingresso.validarAcessoCatraca();
+            ing.validarAcessoCatraca();
+            atualizarTodaInterface();
+            selecionarLinhaPorCodigo(ing.getCodigo());
 
             JOptionPane.showMessageDialog(this,
-                    "ACESSO LIBERADO COM SUCESSO!\n"
-                            + "Catraca destravada para: " + ingresso.getNomeParticipante() + "\n"
-                            + "Bilhete #" + ingresso.getCodigo() + " registrado como UTILIZADO.",
-                    "Catraca Liberada",
+                    "ACESSO LIBERADO COM SUCESSO!\n\n"
+                            + "Catraca destravada para " + ing.getNomeParticipante() + ".\n"
+                            + "Bilhete #" + ing.getCodigo() + " marcado como UTILIZADO.",
+                    "Portaria - Acesso Concedido",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            atualizarVisualizacoes();
-            selecionarIngressoNaTabela(ingresso);
-
         } catch (IngressoInvalidoException ex) {
-            // Mensagem de erro devolvida visualmente via JOptionPane (Requisito 5)
-            JOptionPane.showMessageDialog(this,
-                    ex.getMessage(),
-                    "Acesso Recusado na Portaria",
-                    JOptionPane.ERROR_MESSAGE);
+            exibirErro(ex.getMessage(), "Portaria - Acesso Negado");
         }
     }
 
-    /**
-     * Operação 4: Cancelamento de Ingresso.
-     */
     private void acaoCancelar() {
-        Ingresso ingresso = obterIngressoPorCodigoOuSelecao();
-        if (ingresso == null) return;
+        Ingresso ing = obterIngressoSelecionado();
+        if (ing == null) return;
 
         int resposta = JOptionPane.showConfirmDialog(this,
-                "Deseja realmente cancelar o ingresso #" + ingresso.getCodigo()
-                        + " de " + ingresso.getNomeParticipante() + "?",
+                "Tem certeza que deseja CANCELAR o ingresso #" + ing.getCodigo()
+                        + " de " + ing.getNomeParticipante() + "?\nEsta operação é irreversível.",
                 "Confirmar Cancelamento",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
@@ -485,152 +637,81 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         if (resposta != JOptionPane.YES_OPTION) return;
 
         try {
-            // Dispara Checked Exception caso já esteja utilizado ou cancelado
-            ingresso.cancelar();
+            ing.cancelar();
+            atualizarTodaInterface();
+            selecionarLinhaPorCodigo(ing.getCodigo());
 
             JOptionPane.showMessageDialog(this,
-                    "Ingresso #" + ingresso.getCodigo() + " cancelado com sucesso!",
-                    "Cancelamento Concluído",
+                    "Ingresso #" + ing.getCodigo() + " cancelado com sucesso!",
+                    "Cancelamento Confirmado",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            atualizarVisualizacoes();
-            selecionarIngressoNaTabela(ingresso);
-
         } catch (IngressoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this,
-                    ex.getMessage(),
-                    "Falha no Cancelamento",
-                    JOptionPane.ERROR_MESSAGE);
+            exibirErro(ex.getMessage(), "Erro no Cancelamento");
         }
     }
 
-    /**
-     * Operação 5: Ordenar a lista em memória com Collections.sort().
-     * Requisito POO_09: Utiliza a interface Comparable<Ingresso> (código sequencial).
-     */
     private void acaoOrdenar() {
         if (listaIngressos.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "A lista em memória está vazia. Não há bilhetes para ordenar.",
-                    "Aviso de Ordenação",
-                    JOptionPane.INFORMATION_MESSAGE);
+            exibirAviso("A coleção está vazia. Não há itens para ordenar.", "Ordenação");
             return;
         }
 
-        // Ordenação natural baseada no compareTo()
+        // Requisito POO_09: Collections.sort() graças ao Comparable<Ingresso>
         Collections.sort(listaIngressos);
-
-        atualizarVisualizacoes();
+        atualizarTodaInterface();
 
         JOptionPane.showMessageDialog(this,
-                "Coleção de ingressos ordenada com sucesso por Código Sequencial utilizando Collections.sort()!",
+                "Coleção de ingressos reorganizada por Código Sequencial com sucesso!\n(Executado via Collections.sort())",
                 "Ordenação Concluída",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Operação 6: Gerar Relatório de Público detalhado na JTextArea.
-     * Atende ao requisito do Tema 08: Relatório de público.
-     */
-    private void acaoGerarRelatorioPublico() {
-        atualizarRelatorioPublico();
-        abasExibicao.setSelectedIndex(1); // Alterna para a aba do JTextArea
+    private void acaoGerarRelatorio() {
+        gerarExtratoRelatorioJTextArea();
+        abasVisualizacao.setSelectedIndex(1);
         JOptionPane.showMessageDialog(this,
-                "Relatório de Público gerado com sucesso no painel de texto!",
+                "Relatório Consolidado de Público e Auditoria gerado na aba de texto!",
                 "Relatório Emitido",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Operação 7: Sair com diálogo de confirmação.
-     */
     private void acaoSair() {
-        int confirmacao = JOptionPane.showConfirmDialog(this,
-                "Deseja realmente encerrar a aplicação?\n(Atenção: todos os dados estão mantidos 100% em memória RAM e serão descartados)",
+        int opcao = JOptionPane.showConfirmDialog(this,
+                "Deseja realmente fechar o sistema?\nTodos os dados da sessão (em memória RAM) serão descartados.",
                 "Confirmar Encerramento",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 
-        if (confirmacao == JOptionPane.YES_OPTION) {
-            this.dispose();
+        if (opcao == JOptionPane.YES_OPTION) {
+            dispose();
             System.exit(0);
         }
     }
 
     // =========================================================================
-    // MÉTODOS AUXILIARES DE SUPORTE
+    // ATUALIZAÇÃO DA INTERFACE, TABELA E CARDS
     // =========================================================================
 
-    private Ingresso obterIngressoPorCodigoOuSelecao() {
-        String codTexto = txtCodigo.getText().trim();
-        if (codTexto.isEmpty()) {
-            int linha = tabela.getSelectedRow();
-            if (linha >= 0) {
-                codTexto = String.valueOf(tabela.getValueAt(linha, 0));
-                txtCodigo.setText(codTexto);
-            }
-        }
-
-        if (codTexto.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Selecione uma linha na tabela ou digite o Código do Bilhete para esta operação.",
-                    "Identificação Necessária",
-                    JOptionPane.WARNING_MESSAGE);
-            return null;
-        }
-
-        try {
-            int cod = Integer.parseInt(codTexto);
-            for (Ingresso ing : listaIngressos) {
-                if (ing.getCodigo() == cod) {
-                    return ing;
-                }
-            }
-            JOptionPane.showMessageDialog(this,
-                    "Ingresso #" + cod + " não foi localizado na coleção em memória.",
-                    "Não Encontrado",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Código inválido: '" + codTexto + "'. Digite apenas números inteiros.",
-                    "Erro de Formato",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-        return null;
-    }
-
-    private double converterValorMoeda(String texto) {
-        String limpo = texto.trim().replace("R$", "").replace(" ", "");
-        if (limpo.contains(",")) {
-            limpo = limpo.replace(".", "").replace(',', '.');
-        }
-        if (limpo.isEmpty()) throw new NumberFormatException();
-        return Double.parseDouble(limpo);
-    }
-
-    private void atualizarVisualizacoes() {
-        // Atualiza a tabela
+    private void atualizarTodaInterface() {
         modeloTabela.setRowCount(0);
 
-        int totalInteiras = 0;
-        int totalMeias = 0;
+        int total = listaIngressos.size();
+        int presentes = 0;
         int cancelados = 0;
-        int publicoPresente = 0;
-        double receitaTotal = 0.0;
+        double receita = 0.0;
 
         for (Ingresso ing : listaIngressos) {
-            if (ing instanceof IngressoInteira) totalInteiras++;
-            if (ing instanceof IngressoMeia) totalMeias++;
             if (ing.isCancelado()) {
                 cancelados++;
             } else {
-                receitaTotal += ing.getValor();
+                receita += ing.getValor();
                 if (ing.isUtilizado()) {
-                    publicoPresente++;
+                    presentes++;
                 }
             }
 
-            String horaAcesso = (ing.getDataHoraAcesso() != null)
+            String hora = (ing.getDataHoraAcesso() != null)
                     ? ing.getDataHoraAcesso().format(Ingresso.FORMATADOR_DATA_HORA)
                     : "-";
 
@@ -641,28 +722,28 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
                     ing.getTipo(),
                     ing.formatarValor(ing.getValor()),
                     ing.getStatus(),
-                    horaAcesso
+                    hora
             });
         }
 
-        lblResumoBarra.setText(String.format("Total de Vendas: %d  |  Inteiras: %d  |  Meias: %d  |  Cancelados: %d  |  Público Presente (Catraca): %d  |  Receita Ativa: R$ %.2f",
-                listaIngressos.size(), totalInteiras, totalMeias, cancelados, publicoPresente, receitaTotal));
+        // Atualiza os Cards de KPIs
+        kpiTotal.setValor(String.valueOf(total));
+        kpiPresentes.setValor(String.valueOf(presentes));
+        kpiCancelados.setValor(String.valueOf(cancelados));
+        kpiReceita.setValor(String.format("R$ %.2f", receita));
 
-        atualizarRelatorioPublico();
+        gerarExtratoRelatorioJTextArea();
     }
 
-    /**
-     * Gera o relatório consolidado na JTextArea (Requisito POO_07 / Pág. 3).
-     */
-    private void atualizarRelatorioPublico() {
+    private void gerarExtratoRelatorioJTextArea() {
         StringBuilder sb = new StringBuilder();
-        sb.append("====================================================================================================\n");
-        sb.append("                          RELATÓRIO CONSOLIDADO DE PÚBLICO E BILHETERIA                             \n");
-        sb.append("====================================================================================================\n\n");
+        sb.append("========================================================================================================\n");
+        sb.append("                     RELATÓRIO CONSOLIDADO DE BILHETERIA & AUDITORIA DE PORTARIA                        \n");
+        sb.append("========================================================================================================\n\n");
 
-        int totalIngressos = listaIngressos.size();
-        int inteiras = 0, meias = 0, cancelados = 0, acessos = 0;
-        double receitaInteira = 0, receitaMeia = 0;
+        int total = listaIngressos.size();
+        int presentes = 0, cancelados = 0, inteiras = 0, meias = 0;
+        double recInteiras = 0.0, recMeias = 0.0;
 
         for (Ingresso ing : listaIngressos) {
             if (ing.isCancelado()) {
@@ -671,48 +752,74 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             }
             if (ing instanceof IngressoInteira) {
                 inteiras++;
-                receitaInteira += ing.getValor();
+                recInteiras += ing.getValor();
             } else if (ing instanceof IngressoMeia) {
                 meias++;
-                receitaMeia += ing.getValor();
+                recMeias += ing.getValor();
             }
             if (ing.isUtilizado()) {
-                acessos++;
+                presentes++;
             }
         }
 
-        double receitaTotal = receitaInteira + receitaMeia;
-        double taxaPresenca = (totalIngressos - cancelados > 0)
-                ? ((double) acessos / (totalIngressos - cancelados)) * 100.0 : 0.0;
+        int ativos = total - cancelados;
+        double txPresenca = (ativos > 0) ? ((double) presentes / ativos) * 100.0 : 0.0;
 
-        sb.append(String.format("• Ingressos Emitidos no Total:  %d bilhete(s)\n", totalIngressos));
-        sb.append(String.format("• Ingressos Ativos / Válidos:   %d bilhete(s)\n", (totalIngressos - cancelados)));
-        sb.append(String.format("• Ingressos Cancelados:         %d bilhete(s)\n", cancelados));
-        sb.append(String.format("• Público Presente (Catraca):   %d pessoa(s)\n", acessos));
-        sb.append(String.format("• Taxa de Presença / Conversão: %.1f %%\n", taxaPresenca));
-        sb.append("----------------------------------------------------------------------------------------------------\n");
-        sb.append(String.format("• Receita com Inteiras:         R$ %.2f (%d ingressos)\n", receitaInteira, inteiras));
-        sb.append(String.format("• Receita com Meias:            R$ %.2f (%d ingressos)\n", receitaMeia, meias));
-        sb.append(String.format("• RECEITA TOTAL ARRECADADA:     R$ %.2f\n", receitaTotal));
-        sb.append("====================================================================================================\n\n");
+        sb.append(String.format("• TOTAL DE INGRESSOS EMITIDOS: %d\n", total));
+        sb.append(String.format("• INGRESSOS VÁLIDOS / ATIVOS:  %d\n", ativos));
+        sb.append(String.format("• INGRESSOS CANCELADOS:        %d\n", cancelados));
+        sb.append(String.format("• PÚBLICO PRESENTE NA CATRACA: %d pessoa(s)\n", presentes));
+        sb.append(String.format("• TAXA DE CONVERSÃO / ACESSO:  %.1f %%\n", txPresenca));
+        sb.append("--------------------------------------------------------------------------------------------------------\n");
+        sb.append(String.format("• Receita Inteiras:            R$ %10.2f (%d bilhetes)\n", recInteiras, inteiras));
+        sb.append(String.format("• Receita Meias:               R$ %10.2f (%d bilhetes)\n", recMeias, meias));
+        sb.append(String.format("• ARRECADAÇÃO TOTAL ATIVA:     R$ %10.2f\n", (recInteiras + recMeias)));
+        sb.append("========================================================================================================\n\n");
 
-        sb.append("DISCRIMINAÇÃO DETALHADA DOS BILHETES EM MEMÓRIA (Comparable<T>):\n");
-        sb.append("----------------------------------------------------------------------------------------------------\n");
+        sb.append("REGISTRO AUDITADO DE BILHETES EM MEMÓRIA RAM (Comparable<Ingresso>):\n");
+        sb.append("--------------------------------------------------------------------------------------------------------\n");
         if (listaIngressos.isEmpty()) {
-            sb.append("Nenhum ingresso registrado na sessão.\n");
+            sb.append("Nenhum ingresso emitido nesta sessão.\n");
         } else {
             for (Ingresso ing : listaIngressos) {
                 sb.append(ing.toString()).append("\n");
             }
         }
-        sb.append("----------------------------------------------------------------------------------------------------\n");
+        sb.append("--------------------------------------------------------------------------------------------------------\n");
 
         txtRelatorioPublico.setText(sb.toString());
         txtRelatorioPublico.setCaretPosition(0);
     }
 
-    private void preencherFormularioComIngresso(Ingresso ing) {
-        txtCodigo.setText(String.valueOf(ing.getCodigo()));
+    private Ingresso obterIngressoSelecionado() {
+        String codStr = txtCodigoOperacao.getText().trim();
+        if (codStr.isEmpty()) {
+            int linha = tabela.getSelectedRow();
+            if (linha >= 0) {
+                codStr = String.valueOf(tabela.getValueAt(linha, 0));
+                txtCodigoOperacao.setText(codStr);
+            }
+        }
+
+        if (codStr.isEmpty()) {
+            exibirAviso("Selecione um ingresso na tabela ou digite o código do bilhete.", "Identificação");
+            return null;
+        }
+
+        try {
+            int cod = Integer.parseInt(codStr);
+            for (Ingresso ing : listaIngressos) {
+                if (ing.getCodigo() == cod) return ing;
+            }
+            exibirAviso("Ingresso #" + cod + " não encontrado na memória.", "Não Localizado");
+        } catch (NumberFormatException ex) {
+            exibirErro("Código inválido: '" + codStr + "'.", "Erro Numérico");
+        }
+        return null;
+    }
+
+    private void carregarDadosNoFormulario(Ingresso ing) {
+        txtCodigoOperacao.setText(String.valueOf(ing.getCodigo()));
         txtEvento.setText(ing.getEvento());
         txtParticipante.setText(ing.getNomeParticipante());
         txtValorInteira.setText(String.format("%.2f", ing.getValor()));
@@ -725,20 +832,20 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
     }
 
-    private void selecionarIngressoNaTabela(Ingresso ing) {
+    private void selecionarLinhaPorCodigo(int codigo) {
         for (int i = 0; i < modeloTabela.getRowCount(); i++) {
-            if (((Integer) modeloTabela.getValueAt(i, 0)) == ing.getCodigo()) {
+            if (((Integer) modeloTabela.getValueAt(i, 0)) == codigo) {
                 tabela.setRowSelectionInterval(i, i);
                 tabela.scrollRectToVisible(tabela.getCellRect(i, 0, true));
                 break;
             }
         }
-        txtCodigo.setText(String.valueOf(ing.getCodigo()));
+        txtCodigoOperacao.setText(String.valueOf(codigo));
     }
 
     private void limparCampos() {
         limparCamposVenda();
-        txtCodigo.setText("");
+        txtCodigoOperacao.setText("");
         tabela.clearSelection();
     }
 
@@ -751,44 +858,186 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         txtEvento.requestFocusInWindow();
     }
 
+    private double converterValorMoeda(String texto) {
+        String limpo = texto.trim().replace("R$", "").replace(" ", "");
+        if (limpo.contains(",")) limpo = limpo.replace(".", "").replace(',', '.');
+        if (limpo.isEmpty()) throw new NumberFormatException();
+        return Double.parseDouble(limpo);
+    }
+
+    private void exibirAviso(String msg, String titulo) {
+        JOptionPane.showMessageDialog(this, msg, titulo, JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void exibirErro(String msg, String titulo) {
+        JOptionPane.showMessageDialog(this, msg, titulo, JOptionPane.ERROR_MESSAGE);
+    }
+
     // =========================================================================
-    // IMPLEMENTAÇÃO DE ACTIONLISTENER (EVENTOS DE BOTÃO)
+    // LISTENERS DE BOTÕES E JANELA (REQUISITOS POO_07)
     // =========================================================================
     @Override
     public void actionPerformed(ActionEvent e) {
-        Object src = e.getSource();
-
-        if (src == btnCadastrar) {
-            acaoCadastrar();
-        } else if (src == btnPesquisar) {
-            acaoPesquisar();
-        } else if (src == btnProcessarOperacao) {
-            acaoProcessarOperacao();
-        } else if (src == btnCancelar) {
-            acaoCancelar();
-        } else if (src == btnOrdenar) {
-            acaoOrdenar();
-        } else if (src == btnRelatorioPublico) {
-            acaoGerarRelatorioPublico();
-        } else if (src == btnLimpar) {
-            limparCampos();
-        } else if (src == btnSair) {
-            acaoSair();
-        }
+        Object s = e.getSource();
+        if (s == btnCadastrar) acaoCadastrar();
+        else if (s == btnPesquisar) acaoPesquisar();
+        else if (s == btnProcessarOperacao) acaoProcessarOperacao();
+        else if (s == btnCancelar) acaoCancelar();
+        else if (s == btnOrdenar) acaoOrdenar();
+        else if (s == btnRelatorio) acaoGerarRelatorio();
+        else if (s == btnLimpar) limparCampos();
+        else if (s == btnSair) acaoSair();
     }
 
-    // =========================================================================
-    // IMPLEMENTAÇÃO DE WINDOWLISTENER (EVENTOS DE FECHAMENTO DE JANELA)
-    // =========================================================================
-    @Override
-    public void windowClosing(WindowEvent e) {
-        acaoSair();
-    }
-
+    @Override public void windowClosing(WindowEvent e) { acaoSair(); }
     @Override public void windowOpened(WindowEvent e) {}
     @Override public void windowClosed(WindowEvent e) {}
     @Override public void windowIconified(WindowEvent e) {}
     @Override public void windowDeiconified(WindowEvent e) {}
     @Override public void windowActivated(WindowEvent e) {}
     @Override public void windowDeactivated(WindowEvent e) {}
+
+    // =========================================================================
+    // COMPONENTES MODERNOS CUSTOMIZADOS (100% PURE JAVA SWING)
+    // =========================================================================
+
+    /**
+     * Card moderno com fundo branco, cantos arredondados e borda sutil Slate.
+     */
+    static class PainelCard extends JPanel {
+        private static final long serialVersionUID = 1L;
+        public PainelCard() {
+            setOpaque(false);
+            setBorder(new EmptyBorder(14, 16, 14, 16));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.WHITE);
+            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+            g2.setColor(COR_BORDA);
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    /**
+     * Botão moderno com bordas arredondadas, cor plana e efeito hover suave.
+     */
+    static class BotaoModerno extends JButton {
+        private static final long serialVersionUID = 1L;
+        private final Color corFundo;
+        private final Color corHover;
+        private boolean hover = false;
+
+        public BotaoModerno(String texto, Color fundo, Color frente) {
+            super(texto);
+            this.corFundo = fundo;
+            this.corHover = escurecerCor(fundo, 0.12f);
+            setForeground(frente);
+            setFont(new Font("Segoe UI", Font.BOLD, 12));
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setContentAreaFilled(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setMargin(new Insets(7, 14, 7, 14));
+
+            addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
+                @Override public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+            });
+        }
+
+        private static Color escurecerCor(Color c, float fator) {
+            int r = Math.max(0, (int) (c.getRed() * (1 - fator)));
+            int g = Math.max(0, (int) (c.getGreen() * (1 - fator)));
+            int b = Math.max(0, (int) (c.getBlue() * (1 - fator)));
+            return new Color(r, g, b);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(hover ? corHover : corFundo);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    /**
+     * Card KPI moderno com métrica em destaque numérico e legenda.
+     */
+    static class CardKPI extends JPanel {
+        private static final long serialVersionUID = 1L;
+        private final JLabel lblValor;
+
+        public CardKPI(String titulo, String valorInicial, Color corDestaque) {
+            setLayout(new BorderLayout(4, 3));
+            setOpaque(false);
+            setBorder(new EmptyBorder(10, 14, 10, 14));
+
+            JLabel lblTitulo = new JLabel(titulo);
+            lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            lblTitulo.setForeground(COR_MUTED);
+
+            lblValor = new JLabel(valorInicial);
+            lblValor.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            lblValor.setForeground(corDestaque);
+
+            add(lblTitulo, BorderLayout.NORTH);
+            add(lblValor, BorderLayout.CENTER);
+        }
+
+        public void setValor(String val) {
+            lblValor.setText(val);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.WHITE);
+            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            g2.setColor(COR_BORDA);
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    /**
+     * Renderizador de Badges / Pílulas modernas para a coluna de Status.
+     */
+    static class BadgeRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            label.setHorizontalAlignment(SwingConstants.CENTER);
+            label.setFont(new Font("Segoe UI", Font.BOLD, 11));
+
+            String status = (value != null) ? value.toString() : "";
+            if (status.contains("Utilizado") || status.contains("Realizado")) {
+                label.setBackground(new Color(209, 250, 229)); // Verde Esmeralda #D1FAE5
+                label.setForeground(new Color(6, 95, 70));     // Verde Escuro #065F46
+            } else if (status.contains("Cancelado")) {
+                label.setBackground(new Color(254, 226, 226)); // Vermelho Suave #FEE2E2
+                label.setForeground(new Color(153, 27, 27));   // Vermelho Escuro #991B1B
+            } else {
+                label.setBackground(new Color(219, 234, 254)); // Azul Suave #DBEAFE
+                label.setForeground(new Color(30, 64, 175));   // Azul Escuro #1E40AF
+            }
+
+            label.setOpaque(true);
+            label.setBorder(new EmptyBorder(3, 8, 3, 8));
+            return label;
+        }
+    }
 }

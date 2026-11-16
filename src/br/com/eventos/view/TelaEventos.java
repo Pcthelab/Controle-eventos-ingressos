@@ -20,46 +20,90 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Interface Gráfica de Alto Padrão em Java Swing (javax.swing.*).
- * Paleta Clean: Royal Blue & Frost (Estilo Stripe / Apple).
+ * Interface Gráfica Moderna e Interativa em Java Swing (javax.swing.*).
+ * Possui Seletor Dinâmico de 4 Paletas Clean em Tempo Real:
+ * 1. Royal Blue & Frost (Stripe/Apple)
+ * 2. Deep Indigo & Slate (Linear/Vercel)
+ * 3. Emerald & Mint (Fintech Clean)
+ * 4. Midnight Dark Mode (Cyber Slate / OLED)
  *
- * Sistema 100% em conformidade com as diretrizes da P2 de POO:
- * - 100% em memória RAM (List<Ingresso>)
- * - Implementação explícita de ActionListener e WindowListener
+ * Cumpre 100% dos requisitos da P2 de POO (Prof. Maromo - FATEC):
+ * - Persistência 100% em RAM (List<Ingresso>)
+ * - ActionListener e WindowListener implementados
  * - Botões padronizados: Cadastrar, Pesquisar, Processar Operação, Ordenar, Sair
- * - JTextArea para relatórios e JOptionPane para diálogos
- * - Design moderno: Sombras suaves 2D, KPIs executivos, badges Tailwind, scrollbars finas.
+ * - JTextArea para relatórios e JOptionPane para mensagens
  */
 public class TelaEventos extends JFrame implements ActionListener, WindowListener {
 
     private static final long serialVersionUID = 1L;
 
     // =========================================================================
-    // PALETA CLEAN: ROYAL BLUE & FROST (4 CORES BASE + ESTADOS)
+    // ESTRUTURA DAS 4 PALETAS CLEAN
     // =========================================================================
-    // 1. Fundo Canvas: Gelo Suave
-    private static final Color COR_CANVAS = new Color(248, 250, 252);       // Slate 50
-    // 2. Superfície / Cards: Branco Puro
-    private static final Color COR_CARD = new Color(255, 255, 255);         // White
-    // 3. Acento Principal: Azul Royal Vibrante
-    private static final Color COR_PRIMARY = new Color(37, 99, 235);        // Royal Blue 600
-    private static final Color COR_PRIMARY_HOVER = new Color(29, 78, 216);  // Royal Blue 700
-    private static final Color COR_PRIMARY_LIGHT = new Color(239, 246, 255);// Blue 50
-    // 4. Texto & Contraste: Grafite Profundo e Muted
-    private static final Color COR_TEXTO = new Color(15, 23, 42);           // Slate 900
-    private static final Color COR_MUTED = new Color(100, 116, 139);        // Slate 500
-    private static final Color COR_BORDA = new Color(226, 232, 240);        // Slate 200
+    public static class PaletaTema {
+        public final String nome;
+        public final Color canvas;
+        public final Color card;
+        public final Color header;
+        public final Color primary;
+        public final Color primaryLight;
+        public final Color texto;
+        public final Color muted;
+        public final Color borda;
+        public final boolean isDark;
 
-    // Estados Funcionais Discretos
-    private static final Color COR_SUCESSO = new Color(16, 185, 129);       // Emerald 500
-    private static final Color COR_PERIGO = new Color(239, 68, 68);         // Rose 500
-    private static final Color COR_AMBAR = new Color(217, 119, 6);          // Amber 600
+        public PaletaTema(String nome, Color canvas, Color card, Color header, Color primary,
+                          Color primaryLight, Color texto, Color muted, Color borda, boolean isDark) {
+            this.nome = nome;
+            this.canvas = canvas;
+            this.card = card;
+            this.header = header;
+            this.primary = primary;
+            this.primaryLight = primaryLight;
+            this.texto = texto;
+            this.muted = muted;
+            this.borda = borda;
+            this.isDark = isDark;
+        }
+    }
 
-    // Coleção 100% em Memória RAM
+    public static final PaletaTema[] PALETAS = {
+            new PaletaTema("1. Royal Blue & Frost (Stripe)",
+                    new Color(248, 250, 252), new Color(255, 255, 255), new Color(15, 23, 42),
+                    new Color(37, 99, 235), new Color(239, 246, 255), new Color(15, 23, 42),
+                    new Color(100, 116, 139), new Color(226, 232, 240), false),
+
+            new PaletaTema("2. Deep Indigo & Slate (Linear)",
+                    new Color(241, 245, 249), new Color(255, 255, 255), new Color(30, 27, 75),
+                    new Color(99, 102, 241), new Color(238, 242, 255), new Color(15, 23, 42),
+                    new Color(100, 116, 139), new Color(226, 232, 240), false),
+
+            new PaletaTema("3. Emerald & Mint (Fintech)",
+                    new Color(240, 253, 244), new Color(255, 255, 255), new Color(6, 78, 59),
+                    new Color(5, 150, 105), new Color(236, 253, 245), new Color(15, 23, 42),
+                    new Color(100, 116, 139), new Color(209, 250, 229), false),
+
+            new PaletaTema("4. Midnight Dark Mode (OLED)",
+                    new Color(15, 23, 42), new Color(30, 41, 59), new Color(2, 6, 23),
+                    new Color(56, 189, 248), new Color(30, 41, 59), new Color(248, 250, 252),
+                    new Color(148, 163, 184), new Color(51, 65, 85), true)
+    };
+
+    private PaletaTema temaAtual = PALETAS[0];
+
+    // Estados Funcionais
+    private static final Color COR_SUCESSO = new Color(16, 185, 129);
+    private static final Color COR_PERIGO = new Color(239, 68, 68);
+    private static final Color COR_AMBAR = new Color(217, 119, 6);
+
+    // Coleção 100% em RAM
     private final List<Ingresso> listaIngressos = new ArrayList<>();
     private int contadorSequencial = 1;
 
     // Componentes de Formulário
+    private JPanel painelPrincipal;
+    private JPanel painelHeader;
+    private JComboBox<String> cbSeletorTema;
     private JTextField txtEvento;
     private JTextField txtParticipante;
     private JTextField txtValorInteira;
@@ -68,30 +112,31 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     private JLabel lblDocumentoMeia;
     private JTextField txtCodigoOperacao;
 
-    // Botões Canônicos Exigidos na Pág. 3
-    private JButton btnCadastrar;
-    private JButton btnPesquisar;
-    private JButton btnProcessarOperacao;
-    private JButton btnCancelar;
-    private JButton btnOrdenar;
-    private JButton btnRelatorio;
-    private JButton btnLimpar;
-    private JButton btnSair;
+    // Botões
+    private BotaoModerno btnCadastrar;
+    private BotaoModerno btnPesquisar;
+    private BotaoModerno btnProcessarOperacao;
+    private BotaoModerno btnCancelar;
+    private BotaoModerno btnOrdenar;
+    private BotaoModerno btnRelatorio;
+    private BotaoModerno btnLimpar;
+    private BotaoModerno btnSair;
 
-    // Componentes de Visualização
+    // Visualizações
     private JTabbedPane abasVisualizacao;
     private DefaultTableModel modeloTabela;
     private JTable tabela;
     private JTextArea txtRelatorioPublico;
 
-    // Cards de KPIs Executivos
+    // Cards
+    private List<PainelCard> cardsRegistrados = new ArrayList<>();
     private CardKPI kpiTotal;
     private CardKPI kpiPresentes;
     private CardKPI kpiCancelados;
     private CardKPI kpiReceita;
 
     public TelaEventos() {
-        super("Bilheteria & Controle de Eventos - Avaliação P2 POO (Prof. Maromo)");
+        super("Controle de Eventos & Bilheteria - P2 POO (Prof. Maromo)");
         configurarJanela();
         construirInterface();
         inicializarDadosDemonstracao();
@@ -107,15 +152,15 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     }
 
     private void construirInterface() {
-        JPanel painelPrincipal = new JPanel(new BorderLayout(0, 16));
-        painelPrincipal.setBackground(COR_CANVAS);
+        painelPrincipal = new JPanel(new BorderLayout(0, 16));
+        painelPrincipal.setBackground(temaAtual.canvas);
         painelPrincipal.setBorder(new EmptyBorder(16, 20, 18, 20));
         setContentPane(painelPrincipal);
 
-        // 1. Header Bar Escura Elegante com detalhe em Azul Royal
+        // 1. Header Bar com Seletor de Tema
         painelPrincipal.add(criarBarraCabecalho(), BorderLayout.NORTH);
 
-        // 2. Área Central Dividida (Esquerda: Formulários / Direita: KPIs + Tabela / Relatório)
+        // 2. Área Central Dividida
         JPanel painelCentral = new JPanel(new BorderLayout(16, 0));
         painelCentral.setOpaque(false);
 
@@ -125,76 +170,81 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         painelPrincipal.add(painelCentral, BorderLayout.CENTER);
     }
 
-    /**
-     * Barra de Cabeçalho Superior com relevo suave e indicador de status.
-     */
     private JPanel criarBarraCabecalho() {
-        JPanel header = new JPanel(new BorderLayout(12, 4)) {
+        painelHeader = new JPanel(new BorderLayout(12, 4)) {
             private static final long serialVersionUID = 1L;
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                // Fundo Escuro Slate 900
-                g2.setColor(COR_TEXTO);
+                g2.setColor(temaAtual.header);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
-                // Linha de acento inferior em Azul Royal
-                g2.setColor(COR_PRIMARY);
+                g2.setColor(temaAtual.primary);
                 g2.fillRect(0, getHeight() - 4, getWidth(), 4);
                 g2.dispose();
                 super.paintComponent(g);
             }
         };
-        header.setOpaque(false);
-        header.setBorder(new EmptyBorder(14, 22, 16, 22));
+        painelHeader.setOpaque(false);
+        painelHeader.setBorder(new EmptyBorder(12, 22, 14, 22));
 
         // Títulos
         JPanel painelTitulos = new JPanel(new GridLayout(2, 1, 0, 3));
         painelTitulos.setOpaque(false);
 
         JLabel lblTitulo = new JLabel("CONTROLE DE EVENTOS & BILHETERIA DIGITAL");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 19));
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblTitulo.setForeground(Color.WHITE);
 
         JLabel lblSubtitulo = new JLabel("Tema 08 • Venda de Ingressos, Conferência na Catraca, Cancelamento e Relatórios em RAM");
         lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblSubtitulo.setForeground(new Color(148, 163, 184)); // Slate 400
+        lblSubtitulo.setForeground(new Color(148, 163, 184));
 
         painelTitulos.add(lblTitulo);
         painelTitulos.add(lblSubtitulo);
-        header.add(painelTitulos, BorderLayout.WEST);
+        painelHeader.add(painelTitulos, BorderLayout.WEST);
 
-        // Indicador de Sessão em Memória
-        JPanel painelStatus = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
-        painelStatus.setOpaque(false);
+        // Lado Direito: Seletor Interativo de Paletas + Badge de Status
+        JPanel painelControles = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 4));
+        painelControles.setOpaque(false);
 
-        JLabel lblPulse = new JLabel("● SESSÃO ATIVA (100% RAM)");
-        lblPulse.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblPulse.setForeground(new Color(52, 211, 153)); // Emerald 400
-        painelStatus.add(lblPulse);
+        JLabel lblSeletor = new JLabel("Paleta Clean:");
+        lblSeletor.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblSeletor.setForeground(new Color(203, 213, 225));
+        painelControles.add(lblSeletor);
 
-        header.add(painelStatus, BorderLayout.EAST);
-        return header;
+        String[] nomesTemas = new String[PALETAS.length];
+        for (int i = 0; i < PALETAS.length; i++) nomesTemas[i] = PALETAS[i].nome;
+        cbSeletorTema = new JComboBox<>(nomesTemas);
+        cbSeletorTema.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        cbSeletorTema.setBackground(Color.WHITE);
+        cbSeletorTema.setPreferredSize(new Dimension(220, 30));
+        cbSeletorTema.addActionListener(e -> trocarTema(cbSeletorTema.getSelectedIndex()));
+        painelControles.add(cbSeletorTema);
+
+        JLabel lblPulse = new JLabel("● 100% RAM");
+        lblPulse.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblPulse.setForeground(new Color(52, 211, 153));
+        painelControles.add(lblPulse);
+
+        painelHeader.add(painelControles, BorderLayout.EAST);
+        return painelHeader;
     }
 
-    /**
-     * Coluna da esquerda com Cards Flutuantes (Sombras 2D) para Venda e Portaria.
-     */
     private JPanel criarColunaEsquerdaFormularios() {
         JPanel coluna = new JPanel();
         coluna.setLayout(new BoxLayout(coluna, BoxLayout.Y_AXIS));
         coluna.setOpaque(false);
         coluna.setPreferredSize(new Dimension(390, 0));
 
-        // =====================================================================
-        // CARD 1: FORMULÁRIO DE NOVA VENDA (CADASTRAR)
-        // =====================================================================
+        // CARD 1: Venda
         PainelCard cardVenda = new PainelCard();
+        cardsRegistrados.add(cardVenda);
         cardVenda.setLayout(new BoxLayout(cardVenda, BoxLayout.Y_AXIS));
 
         JLabel tituloVenda = new JLabel("Nova Venda de Ingresso");
         tituloVenda.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        tituloVenda.setForeground(COR_TEXTO);
+        tituloVenda.setForeground(temaAtual.texto);
         tituloVenda.setAlignmentX(Component.LEFT_ALIGNMENT);
         cardVenda.add(tituloVenda);
         cardVenda.add(Box.createVerticalStrut(12));
@@ -244,7 +294,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         cardVenda.add(txtDocumentoMeia);
         cardVenda.add(Box.createVerticalStrut(14));
 
-        btnCadastrar = new BotaoModerno("+ Cadastrar (Registrar Venda)", COR_PRIMARY, Color.WHITE, true);
+        btnCadastrar = new BotaoModerno("+ Cadastrar (Registrar Venda)", temaAtual.primary, Color.WHITE, true);
         btnCadastrar.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnCadastrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         btnCadastrar.addActionListener(this);
@@ -253,15 +303,14 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         coluna.add(cardVenda);
         coluna.add(Box.createVerticalStrut(14));
 
-        // =====================================================================
-        // CARD 2: OPERAÇÕES DE PORTARIA & CONSULTA
-        // =====================================================================
+        // CARD 2: Portaria
         PainelCard cardOperacoes = new PainelCard();
+        cardsRegistrados.add(cardOperacoes);
         cardOperacoes.setLayout(new BoxLayout(cardOperacoes, BoxLayout.Y_AXIS));
 
         JLabel tituloOperacoes = new JLabel("Operações de Portaria & Catraca");
         tituloOperacoes.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        tituloOperacoes.setForeground(COR_TEXTO);
+        tituloOperacoes.setForeground(temaAtual.texto);
         tituloOperacoes.setAlignmentX(Component.LEFT_ALIGNMENT);
         cardOperacoes.add(tituloOperacoes);
         cardOperacoes.add(Box.createVerticalStrut(12));
@@ -277,7 +326,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         txtCodigoOperacao.setFont(new Font("Segoe UI", Font.BOLD, 13));
         linhaCodigoBusca.add(txtCodigoOperacao, BorderLayout.CENTER);
 
-        btnPesquisar = new BotaoModerno("Pesquisar", new Color(241, 245, 249), COR_TEXTO, false);
+        btnPesquisar = new BotaoModerno("Pesquisar", new Color(241, 245, 249), temaAtual.texto, false);
         btnPesquisar.addActionListener(this);
         linhaCodigoBusca.add(btnPesquisar, BorderLayout.EAST);
 
@@ -300,7 +349,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         btnCancelar.addActionListener(this);
         linhaAuxiliar.add(btnCancelar);
 
-        btnLimpar = new BotaoModerno("Limpar", new Color(241, 245, 249), COR_MUTED, false);
+        btnLimpar = new BotaoModerno("Limpar", new Color(241, 245, 249), temaAtual.muted, false);
         btnLimpar.addActionListener(this);
         linhaAuxiliar.add(btnLimpar);
 
@@ -311,19 +360,16 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         return coluna;
     }
 
-    /**
-     * Coluna da direita: 4 KPIs Executivos no topo + Abas com Tabela e JTextArea.
-     */
     private JPanel criarColunaDireitaVisualizacoes() {
         JPanel painel = new JPanel(new BorderLayout(0, 14));
         painel.setOpaque(false);
 
-        // 1. Linha com 4 Cards de Métricas (KPIs)
+        // 4 Cards KPIs
         JPanel painelKPIs = new JPanel(new GridLayout(1, 4, 12, 0));
         painelKPIs.setOpaque(false);
         painelKPIs.setPreferredSize(new Dimension(0, 72));
 
-        kpiTotal = new CardKPI("TOTAL EMITIDOS", "0", COR_PRIMARY);
+        kpiTotal = new CardKPI("TOTAL EMITIDOS", "0", temaAtual.primary);
         kpiPresentes = new CardKPI("PÚBLICO CATRACA", "0", COR_SUCESSO);
         kpiCancelados = new CardKPI("CANCELADOS", "0", COR_PERIGO);
         kpiReceita = new CardKPI("RECEITA TOTAL", "R$ 0,00", new Color(124, 58, 237));
@@ -334,17 +380,18 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         painelKPIs.add(kpiReceita);
         painel.add(painelKPIs, BorderLayout.NORTH);
 
-        // 2. Card Central com Abas
+        // Card com Abas
         PainelCard cardAbas = new PainelCard();
+        cardsRegistrados.add(cardAbas);
         cardAbas.setLayout(new BorderLayout(0, 10));
 
-        // Barra superior de ações
+        // Barra superior
         JPanel barraSuperior = new JPanel(new BorderLayout(8, 0));
         barraSuperior.setOpaque(false);
 
         JLabel lblDica = new JLabel("Dica: Clique em qualquer linha para carregar o código instantaneamente");
         lblDica.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-        lblDica.setForeground(COR_MUTED);
+        lblDica.setForeground(temaAtual.muted);
         barraSuperior.add(lblDica, BorderLayout.WEST);
 
         JPanel botoesAcao = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
@@ -365,11 +412,11 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         barraSuperior.add(botoesAcao, BorderLayout.EAST);
         cardAbas.add(barraSuperior, BorderLayout.NORTH);
 
-        // Configuração das Abas
+        // Abas
         abasVisualizacao = new JTabbedPane();
         abasVisualizacao.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        // Aba 1: Tabela Dinâmica com Renderizadores Modernos
+        // Aba 1: Tabela
         modeloTabela = new DefaultTableModel(new Object[]{"Código", "Evento", "Participante", "Tipo", "Valor (R$)", "Status do Bilhete", "Acesso Catraca"}, 0) {
             private static final long serialVersionUID = 1L;
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -391,11 +438,12 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         aplicarScrollbarModerna(scrollTabela);
         abasVisualizacao.addTab("Grade de Ingressos (Tabela)", scrollTabela);
 
-        // Aba 2: JTextArea Exigida pelo PDF para Relatórios
+        // Aba 2: Relatório JTextArea
         txtRelatorioPublico = new JTextArea();
         txtRelatorioPublico.setEditable(false);
         txtRelatorioPublico.setFont(new Font("Consolas", Font.PLAIN, 12));
-        txtRelatorioPublico.setBackground(new Color(250, 252, 255));
+        txtRelatorioPublico.setBackground(temaAtual.isDark ? new Color(15, 23, 42) : new Color(250, 252, 255));
+        txtRelatorioPublico.setForeground(temaAtual.isDark ? new Color(241, 245, 249) : temaAtual.texto);
         txtRelatorioPublico.setBorder(new EmptyBorder(14, 16, 14, 16));
 
         JScrollPane scrollRelatorio = new JScrollPane(txtRelatorioPublico);
@@ -416,8 +464,8 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         tab.setShowVerticalLines(false);
         tab.setShowHorizontalLines(true);
         tab.setGridColor(new Color(241, 245, 249));
-        tab.setSelectionBackground(new Color(224, 238, 254)); // Soft Blue highlight
-        tab.setSelectionForeground(COR_TEXTO);
+        tab.setSelectionBackground(temaAtual.primaryLight);
+        tab.setSelectionForeground(temaAtual.texto);
 
         JTableHeader th = tab.getTableHeader();
         th.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -426,45 +474,89 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         th.setPreferredSize(new Dimension(0, 38));
         th.setReorderingAllowed(false);
 
-        // Larguras proporcionais
         int[] larguras = {65, 175, 175, 110, 110, 160, 160};
         for (int i = 0; i < larguras.length; i++) {
             tab.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
         }
 
-        // Alinhamento das colunas
         DefaultTableCellRenderer centro = new DefaultTableCellRenderer();
         centro.setHorizontalAlignment(SwingConstants.CENTER);
         tab.getColumnModel().getColumn(0).setCellRenderer(centro);
         tab.getColumnModel().getColumn(4).setCellRenderer(centro);
         tab.getColumnModel().getColumn(6).setCellRenderer(centro);
 
-        // Renderizador de Badges Coloridos de Status (Tailwind Style)
         tab.getColumnModel().getColumn(5).setCellRenderer(new BadgeRenderer());
     }
 
     private void aplicarScrollbarModerna(JScrollPane scroll) {
-        scroll.setBorder(new LineBorder(COR_BORDA, 1));
-        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setBorder(new LineBorder(temaAtual.borda, 1));
+        scroll.getViewport().setBackground(temaAtual.card);
         scroll.getVerticalScrollBar().setUI(new ModernScrollBarUI());
         scroll.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
         scroll.getVerticalScrollBar().setPreferredSize(new Dimension(8, 0));
         scroll.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 8));
     }
 
+    /**
+     * Aplica uma nova paleta clean em tempo real em todos os componentes.
+     */
+    private void trocarTema(int index) {
+        if (index < 0 || index >= PALETAS.length) return;
+        temaAtual = PALETAS[index];
+
+        // Atualiza Canvas e Header
+        painelPrincipal.setBackground(temaAtual.canvas);
+        painelHeader.repaint();
+
+        // Atualiza Botão Primário e KPI de destaque
+        btnCadastrar.setCorFundo(temaAtual.primary);
+        kpiTotal.setCorAcento(temaAtual.primary);
+
+        // Atualiza Tabela
+        tabela.setSelectionBackground(temaAtual.primaryLight);
+        tabela.setSelectionForeground(temaAtual.texto);
+        tabela.setBackground(temaAtual.card);
+        tabela.setForeground(temaAtual.texto);
+        tabela.getTableHeader().setBackground(temaAtual.isDark ? new Color(30, 41, 59) : new Color(241, 245, 249));
+        tabela.getTableHeader().setForeground(temaAtual.isDark ? new Color(226, 232, 240) : new Color(71, 85, 105));
+
+        // Atualiza Relatório de Texto
+        txtRelatorioPublico.setBackground(temaAtual.isDark ? new Color(15, 23, 42) : new Color(250, 252, 255));
+        txtRelatorioPublico.setForeground(temaAtual.isDark ? new Color(241, 245, 249) : temaAtual.texto);
+
+        // Atualiza Campos de Texto
+        JTextField[] campos = {txtEvento, txtParticipante, txtValorInteira, txtDocumentoMeia, txtCodigoOperacao};
+        for (JTextField f : campos) {
+            if (f != null) {
+                f.setBackground(temaAtual.card);
+                f.setForeground(temaAtual.texto);
+                f.setCaretColor(temaAtual.texto);
+                f.setBorder(BorderFactory.createCompoundBorder(
+                        new LineBorder(temaAtual.borda, 1),
+                        new EmptyBorder(3, 10, 3, 10)));
+            }
+        }
+
+        // Repinta todos os Cards
+        for (PainelCard card : cardsRegistrados) {
+            card.repaint();
+        }
+
+        SwingUtilities.updateComponentTreeUI(this);
+        atualizarTodaInterface();
+    }
+
     private void alternarCampoDocumentoMeia() {
         boolean ehMeia = cbTipo.getSelectedIndex() == 1;
         lblDocumentoMeia.setEnabled(ehMeia);
         txtDocumentoMeia.setEnabled(ehMeia);
-        if (ehMeia) {
-            txtDocumentoMeia.requestFocusInWindow();
-        }
+        if (ehMeia) txtDocumentoMeia.requestFocusInWindow();
     }
 
     private JLabel criarRotuloCampo(String texto) {
         JLabel rotulo = new JLabel(texto);
         rotulo.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        rotulo.setForeground(new Color(71, 85, 105)); // Slate 600
+        rotulo.setForeground(new Color(71, 85, 105));
         rotulo.setAlignmentX(Component.LEFT_ALIGNMENT);
         return rotulo;
     }
@@ -476,20 +568,20 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
         campo.setPreferredSize(new Dimension(100, 34));
         campo.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(COR_BORDA, 1),
+                new LineBorder(temaAtual.borda, 1),
                 new EmptyBorder(3, 10, 3, 10)));
 
         campo.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 campo.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(COR_PRIMARY, 2),
+                        new LineBorder(temaAtual.primary, 2),
                         new EmptyBorder(2, 9, 2, 9)));
             }
             @Override
             public void focusLost(FocusEvent e) {
                 campo.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(COR_BORDA, 1),
+                        new LineBorder(temaAtual.borda, 1),
                         new EmptyBorder(3, 10, 3, 10)));
             }
         });
@@ -683,12 +775,11 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             return;
         }
 
-        // Requisito POO_09: Collections.sort() graças ao Comparable<Ingresso>
         Collections.sort(listaIngressos);
         atualizarTodaInterface();
 
         JOptionPane.showMessageDialog(this,
-                "Coleção de ingressos reorganizada por Código Sequencial com sucesso!\n(Executado via Collections.sort())",
+                "Coleção reorganizada por Código Sequencial com sucesso!\n(Executado via Collections.sort())",
                 "Ordenação Concluída",
                 JOptionPane.INFORMATION_MESSAGE);
     }
@@ -752,7 +843,6 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             });
         }
 
-        // Atualiza os Cards de KPIs
         kpiTotal.setValor(String.valueOf(total));
         kpiPresentes.setValor(String.valueOf(presentes));
         kpiCancelados.setValor(String.valueOf(cancelados));
@@ -927,10 +1017,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     // COMPONENTES MODERNOS COM SOMBRA E ESTILO 2D (PURE JAVA SWING)
     // =========================================================================
 
-    /**
-     * Card moderno flutuante com sombreamento suave (Drop Shadow em Java 2D).
-     */
-    static class PainelCard extends JPanel {
+    class PainelCard extends JPanel {
         private static final long serialVersionUID = 1L;
 
         public PainelCard() {
@@ -949,17 +1036,15 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             int h = getHeight() - 5;
 
             // Sombra suave (Drop Shadow)
-            g2.setColor(new Color(15, 23, 42, 6));
+            g2.setColor(new Color(15, 23, 42, temaAtual.isDark ? 30 : 8));
             g2.fillRoundRect(x + 1, y + 3, w, h, 16, 16);
-            g2.setColor(new Color(15, 23, 42, 12));
-            g2.fillRoundRect(x, y + 1, w, h, 16, 16);
 
-            // Fundo Branco Puro
-            g2.setColor(COR_CARD);
+            // Fundo do Card
+            g2.setColor(temaAtual.card);
             g2.fillRoundRect(x, y, w, h, 14, 14);
 
-            // Borda Sutil Slate 200
-            g2.setColor(COR_BORDA);
+            // Borda
+            g2.setColor(temaAtual.borda);
             g2.drawRoundRect(x, y, w, h, 14, 14);
 
             g2.dispose();
@@ -967,20 +1052,16 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
     }
 
-    /**
-     * Botão moderno com bordas arredondadas, cor plana e efeito hover suave.
-     */
     static class BotaoModerno extends JButton {
         private static final long serialVersionUID = 1L;
-        private final Color corFundo;
-        private final Color corHover;
+        private Color corFundo;
+        private Color corHover;
         private final boolean temSombra;
         private boolean hover = false;
 
         public BotaoModerno(String texto, Color fundo, Color frente, boolean temSombra) {
             super(texto);
-            this.corFundo = fundo;
-            this.corHover = escurecerCor(fundo, 0.12f);
+            setCorFundo(fundo);
             this.temSombra = temSombra;
             setForeground(frente);
             setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -994,6 +1075,12 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
                 @Override public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
                 @Override public void mouseExited(MouseEvent e) { hover = false; repaint(); }
             });
+        }
+
+        public void setCorFundo(Color c) {
+            this.corFundo = c;
+            this.corHover = escurecerCor(c, 0.12f);
+            repaint();
         }
 
         private static Color escurecerCor(Color c, float fator) {
@@ -1020,13 +1107,10 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
     }
 
-    /**
-     * Card KPI moderno estilo Stripe com métrica em destaque e barra de acento.
-     */
-    static class CardKPI extends JPanel {
+    class CardKPI extends JPanel {
         private static final long serialVersionUID = 1L;
         private final JLabel lblValor;
-        private final Color corAcento;
+        private Color corAcento;
 
         public CardKPI(String titulo, String valorInicial, Color corDestaque) {
             this.corAcento = corDestaque;
@@ -1036,7 +1120,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
 
             JLabel lblTitulo = new JLabel(titulo);
             lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            lblTitulo.setForeground(COR_MUTED);
+            lblTitulo.setForeground(temaAtual.muted);
 
             lblValor = new JLabel(valorInicial);
             lblValor.setFont(new Font("Segoe UI", Font.BOLD, 19));
@@ -1050,6 +1134,12 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             lblValor.setText(val);
         }
 
+        public void setCorAcento(Color c) {
+            this.corAcento = c;
+            lblValor.setForeground(c);
+            repaint();
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -1058,17 +1148,14 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             int w = getWidth() - 3;
             int h = getHeight() - 3;
 
-            // Sombra suave
-            g2.setColor(new Color(15, 23, 42, 8));
+            g2.setColor(new Color(15, 23, 42, temaAtual.isDark ? 25 : 8));
             g2.fillRoundRect(1, 2, w, h, 12, 12);
 
-            // Card Branco
-            g2.setColor(Color.WHITE);
+            g2.setColor(temaAtual.card);
             g2.fillRoundRect(0, 0, w, h, 12, 12);
-            g2.setColor(COR_BORDA);
+            g2.setColor(temaAtual.borda);
             g2.drawRoundRect(0, 0, w, h, 12, 12);
 
-            // Pequena linha de acento colorida na lateral esquerda
             g2.setColor(corAcento);
             g2.fillRoundRect(0, 0, 4, h, 4, 4);
 
@@ -1077,10 +1164,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
     }
 
-    /**
-     * Renderizador de Badges / Pílulas modernas (Tailwind Style) para a coluna de Status.
-     */
-    static class BadgeRenderer extends DefaultTableCellRenderer {
+    class BadgeRenderer extends DefaultTableCellRenderer {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1092,14 +1176,14 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
 
             String status = (value != null) ? value.toString() : "";
             if (status.contains("Utilizado") || status.contains("Realizado")) {
-                label.setBackground(new Color(236, 253, 245)); // Emerald 50
-                label.setForeground(new Color(4, 120, 87));     // Emerald 700
+                label.setBackground(new Color(236, 253, 245));
+                label.setForeground(new Color(4, 120, 87));
             } else if (status.contains("Cancelado")) {
-                label.setBackground(new Color(254, 242, 242)); // Rose 50
-                label.setForeground(new Color(185, 28, 28));    // Rose 700
+                label.setBackground(new Color(254, 242, 242));
+                label.setForeground(new Color(185, 28, 28));
             } else {
-                label.setBackground(COR_PRIMARY_LIGHT);        // Blue 50
-                label.setForeground(COR_PRIMARY_HOVER);        // Blue 700
+                label.setBackground(temaAtual.primaryLight);
+                label.setForeground(temaAtual.primary);
             }
 
             label.setOpaque(true);
@@ -1108,31 +1192,19 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
     }
 
-    /**
-     * Barra de Rolagem Minimalista e Fina (Estilo macOS / Chrome).
-     */
-    static class ModernScrollBarUI extends BasicScrollBarUI {
+    class ModernScrollBarUI extends BasicScrollBarUI {
         @Override
         protected void configureScrollBarColors() {
-            this.thumbColor = new Color(203, 213, 225); // Slate 300
-            this.trackColor = Color.WHITE;
+            this.thumbColor = new Color(203, 213, 225);
+            this.trackColor = temaAtual.card;
         }
 
-        @Override
-        protected JButton createDecreaseButton(int orientation) {
-            return criarBotaoVazio();
-        }
-
-        @Override
-        protected JButton createIncreaseButton(int orientation) {
-            return criarBotaoVazio();
-        }
+        @Override protected JButton createDecreaseButton(int orientation) { return criarBotaoVazio(); }
+        @Override protected JButton createIncreaseButton(int orientation) { return criarBotaoVazio(); }
 
         private JButton criarBotaoVazio() {
             JButton b = new JButton();
             b.setPreferredSize(new Dimension(0, 0));
-            b.setMinimumSize(new Dimension(0, 0));
-            b.setMaximumSize(new Dimension(0, 0));
             return b;
         }
 
@@ -1147,8 +1219,6 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         }
 
         @Override
-        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-            // Track limpo sem fundo cinza pesado
-        }
+        protected void paintTrack(Graphics g, JComponent c, Rectangle thumbBounds) {}
     }
 }

@@ -1,4 +1,4 @@
-# Sistema de Estacionamento Rotativo em Memória (Swing + Java Collections)
+# Sistema de Controle de Eventos e Venda de Ingressos (Swing + Java Collections)
 
 Projeto Prático referente à **Avaliação P2** da disciplina de **Programação Orientada a Objetos (POO)**.  
 **Professor:** Prof. Mestre Marcos Roberto de Moraes (Maromo)  
@@ -9,163 +9,163 @@ Projeto Prático referente à **Avaliação P2** da disciplina de **Programaçã
 
 ## 👥 1. Identificação do(s) Aluno(s)
 
-- **Integrantes da Dupla / Aluno:**
-  - **Nome Completo:** Juan Diego [Preencher se aplicável] — **RA:** [Preencher RA]
-  - **Nome Completo:** [Preencher nome da dupla, se houver] — **RA:** [Preencher RA]
-- **Turma:** Análise e Desenvolvimento de Sistemas / Informática para Negócios
-- **Semestre:** 2º Semestre
+- **Integrantes:**
+  - **Nome:** Juan Diego [Completar Sobrenome se desejar] — **RA:** [Preencher RA]
+  - *(Trabalho realizado individualmente / em dupla conforme autorização das diretrizes)*
+- **Curso:** Análise e Desenvolvimento de Sistemas / Gestão em TI
+- **Disciplina:** Programação Orientada a Objetos (POO)
 
 ---
 
-## 📌 2. Tema Escolhido
+## 🎟️ 2. Tema Escolhido
 
-- **Tema Nº 03:** **Estacionamento Rotativo**
-- **Entidade Principal (`Comparable`):** `TicketEstacionamento` (ordenação natural por horário de entrada com `Collections.sort()`).
-- **Interface de Negócio Obrigatória:** `Tarifavel` (método abstrato `calcularPrecoEstadia(long minutosPermanencia)` acompanhado de métodos `default` e `static` do Java moderno).
-- **Checked Exception Customizada:** `VagaNaoDisponivelException` (herda de `java.lang.Exception`, disparada quando o pátio atinge a capacidade máxima).
+- **Tema Nº 08:** **Controle de Eventos e Venda de Ingressos**
+- **Entidade Principal (`Comparable`):** `Ingresso` (ordenação natural por código sequencial do bilhete com `Collections.sort()`).
+- **Interface de Negócio Obrigatória:** `Validavel` (método `validarAcessoCatraca()` acompanhado de métodos `default` e `static` do Java moderno).
+- **Checked Exception Customizada:** `IngressoInvalidoException` (herda de `java.lang.Exception`, nos moldes da `SemSaldoException` do material POO_08).
 - **Operações em Memória (`List<T>`):**
-  - Registro de entrada de veículo;
-  - Cálculo polimórfico e baixa de estadia;
-  - Liberação de vaga no pátio;
-  - Extrato dos veículos e relatório ordenado.
+  - Venda de bilhetes (inteira e meia-entrada com cálculo automático de 50%);
+  - Conferência na portaria com baixa via catraca polimórfica;
+  - Cancelamento de ingressos com validação de elegibilidade;
+  - Relatório consolidado de público e bilheteria em `JTextArea`.
 
 ---
 
 ## 🏛️ 3. Arquitetura do Software e Estrutura de Pacotes
 
-A aplicação foi estruturada rigorosamente segundo a separação em camadas e boas práticas de POO solicitadas no documento oficial:
+O projeto segue rigorosamente a padronização e boas práticas vistas em aula e solicitadas na página 3 das diretrizes:
 
 ```
 src/
 └── br/
     └── com/
-        └── estacionamento/
-            ├── Principal.java                     # Ponto de entrada (main) e inicialização da GUI
-            ├── interfaces/
-            │   └── Tarifavel.java                 # Interface com contrato de cálculo e métodos default/static
+        └── eventos/
+            ├── Principal.java                     # Ponto de entrada (main) com Look and Feel Nimbus
             ├── exception/
-            │   └── VagaNaoDisponivelException.java # Checked Exception customizada (herda de Exception)
+            │   └── IngressoInvalidoException.java # Checked Exception customizada (herda de Exception)
+            ├── interfaces/
+            │   └── Validavel.java                 # Interface com método abstrato, default e static
             ├── model/
-            │   ├── TicketEstacionamento.java       # Entidade principal abstrata (Comparable, equals, hashCode)
-            │   ├── TicketCarro.java               # Subclasse especializada para Automóveis
-            │   └── TicketMoto.java                # Subclasse especializada para Motocicletas
+            │   ├── Ingresso.java                  # Entidade principal abstrata (Comparable, equals, hashCode)
+            │   ├── IngressoInteira.java           # Subclasse para ingressos inteiros
+            │   └── IngressoMeia.java              # Subclasse para meia-entrada (comprovante estudantil)
             └── view/
-                └── TelaEstacionamento.java        # Interface gráfica javax.swing.* (JFrame, Eventos e List)
+                └── TelaEventos.java               # Interface gráfica Swing (JFrame, Eventos e List em RAM)
 ```
 
-### Detalhamento das Classes:
+### Detalhamento das Classes e Requisitos Técnicos Atendidos:
 
-1. **`br.com.estacionamento.interfaces.Tarifavel`:**
-   - Contrato contendo o método abstrato `double calcularPrecoEstadia(long minutosPermanencia)`.
-   - Método `default` `String formatarValor(double valor)` para formatação em Real (`R$ 0,00`).
-   - Método `default` `double aplicarDescontoConvenio(...)` para suporte a regras promocionais.
-   - Método `static` `int obterToleranciaMinutos()` retornando 15 minutos de tolerância sem cobrança.
+1. **`br.com.eventos.interfaces.Validavel`:**
+   - **Método Abstrato:** `boolean validarAcessoCatraca() throws IngressoInvalidoException;`
+   - **Método Default:** `default String formatarValor(double valor)` (formatação monetária `R$ 0,00`).
+   - **Método Default:** `default String obterInstrucaoCatraca()` (orientações específicas para a portaria).
+   - **Método Static:** `static double calcularValorMeia(double valorInteira)` (aplica a regra de 50% de desconto).
 
-2. **`br.com.estacionamento.exception.VagaNaoDisponivelException`:**
-   - Checked Exception customizada (estende `java.lang.Exception`) nos moldes de `SemSaldoException` (POO_08).
-   - Lançada na tentativa de registrar a entrada de veículos quando o número de veículos ativos no pátio atinge o teto estipulado (`CAPACIDADE_MAXIMA = 5`).
-   - A captura é tratada visualmente devolvendo alerta ao usuário com `JOptionPane.showMessageDialog()`.
+2. **`br.com.eventos.exception.IngressoInvalidoException`:**
+   - Checked Exception customizada estendendo `java.lang.Exception`.
+   - Disparada ao tentar:
+     - Realizar acesso com ingresso cancelado;
+     - Realizar acesso duplo com ingresso já utilizado na catraca;
+     - Cancelar um ingresso que já foi utilizado na portaria;
+     - Cancelar um bilhete já cancelado anteriormente.
+   - Mensagens de erro são capturadas e exibidas amigavelmente via `JOptionPane.showMessageDialog()`.
 
-3. **`br.com.estacionamento.model.TicketEstacionamento`:**
-   - Entidade principal contendo atributos privados: `numero`, `placa`, `modelo`, `horaEntrada`, `horaSaida`, `valorPago`, `finalizado`.
+3. **`br.com.eventos.model.Ingresso`:**
+   - Entidade principal contendo campos privados: `codigo`, `evento`, `nomeParticipante`, `valor`, `utilizado`, `cancelado`, `dataHoraAcesso`.
    - Construtores sobrecarregados, getters e setters com encapsulamento rigoroso.
-   - **`Comparable<TicketEstacionamento>`:** sobrescreve `compareTo()` ordenando pelo `horaEntrada` (horário de entrada), atendendo estritamente ao requisito do tema.
-   - **`equals()` e `hashCode()`:** sobrescritos comparando `numero` do ticket e `placa`.
-   - **`toString()`:** representação textual legível formatada para exibição em extratos.
+   - **`Comparable<Ingresso>`:** sobrescreve `compareTo()` para permitir a ordenação natural da lista em memória por código sequencial com `Collections.sort()`.
+   - **`equals()` e `hashCode()`:** sobrescritos considerando a unicidade do código do bilhete no evento.
+   - **`toString()`:** representação textual legível formatada para geração de relatórios.
 
-4. **`br.com.estacionamento.model.TicketCarro` e `TicketMoto` (Polimorfismo por Interface):**
-   - Subclasses concretas herdando de `TicketEstacionamento` e implementando a precificação:
-     - **Carro:** 15 min de tolerância grátis; R$ 12,00 na 1ª hora; R$ 6,00 a cada hora (ou fração) adicional.
-     - **Moto:** 15 min de tolerância grátis; R$ 7,00 na 1ª hora; R$ 3,50 a cada hora (ou fração) adicional.
+4. **`br.com.eventos.model.IngressoInteira` e `IngressoMeia` (Polimorfismo por Herança e Interface):**
+   - `IngressoInteira`: acesso padrão e conferência simples de identidade na portaria.
+   - `IngressoMeia`: especializa a regra armazenando o `documentoComprovante` (ex: Carteirinha de Estudante) e personalizando a validação na catraca (`obterInstrucaoCatraca()` e `validarAcessoCatraca()`).
 
-5. **`br.com.estacionamento.view.TelaEstacionamento`:**
+5. **`br.com.eventos.view.TelaEventos`:**
    - Estende `javax.swing.JFrame` e implementa `ActionListener` e `WindowListener`.
-   - Mantém o armazenamento 100% em memória RAM por meio de `private final List<TicketEstacionamento> listaTickets = new ArrayList<>()`.
-   - Possui formulários com `JTextField`, `JComboBox`, `JLabel`, painel com status em tempo real das vagas e área de texto `JTextArea` dentro de `JScrollPane`.
-   - Botões obrigatórios implementados:
-     - **Cadastrar (Entrada):** valida campos e vagas, instancia polimorficamente o ticket e armazena na lista em memória;
-     - **Pesquisar:** pesquisa por número do ticket ou por placa, tratando `NumberFormatException`;
-     - **Processar Operação (Baixa):** calcula o valor devido polimorficamente através de `ticket.calcularPrecoEstadia(...)`, emite o recibo, dá baixa e libera a vaga no pátio;
-     - **Ordenar:** invoca `Collections.sort(listaTickets)` disparando a ordenação natural por horário de entrada;
-     - **Sair:** exibe caixa de diálogo de confirmação antes de encerrar o programa.
-   - Tratamento de fechamento de janela com `windowClosing` interceptando o clique no "X" e solicitando confirmação.
+   - Mantém todos os dados 100% em memória RAM: `private final List<Ingresso> listaIngressos = new ArrayList<>()`.
+   - Contém todos os botões e componentes solicitados na Pág. 3 do PDF:
+     - **Cadastrar (Venda):** registra nova emissão de bilhete com validações e captura de `NumberFormatException`;
+     - **Pesquisar:** busca bilhete por código ou nome do participante;
+     - **Processar Operação (Catraca):** realiza a conferência e baixa de acesso do participante;
+     - **Cancelar Ingresso:** cancela bilhetes elegíveis com confirmação;
+     - **Ordenar (Código):** executa `Collections.sort(listaIngressos)` e atualiza a interface;
+     - **Relatório de Público:** gera estatísticas consolidadas no painel de texto;
+     - **Limpar:** reseta os campos do formulário;
+     - **Sair:** fecha a aplicação com diálogo de confirmação.
+   - Exibição em abas integradas:
+     - **Aba 📋 Tabela Dinâmica (`JTable`):** com ordenação visual, seleção e preenchimento de campos;
+     - **Aba 📊 Relatório de Público (`JTextArea` dentro de `JScrollPane`):** extrato estatístico completo (público presente, receita total, taxa de comparecimento, listagem detalhada dos bilhetes).
+   - Fechamento seguro interceptado por `windowClosing` via `WindowListener`.
 
-6. **`br.com.estacionamento.Principal`:**
-   - Ponto de entrada (`main`) que define o Look and Feel Nimbus e instancia `new TelaEstacionamento().setVisible(true)` na fila de eventos do Swing (`SwingUtilities.invokeLater`).
+6. **`br.com.eventos.Principal`:**
+   - Contém o método `public static void main(String[] args)` que configura o Look and Feel Nimbus e exibe a tela na fila de eventos do Swing (`SwingUtilities.invokeLater`).
 
 ---
 
 ## ⚙️ 4. Instruções de Compilação e Execução
 
 ### Pré-requisitos:
-- **Java JDK 17** ou superior instalado (projeto testado e validado no Java 21).
+- **Java JDK 17** ou superior instalado (projeto testado e homologado no Java 21).
 
-### Execução Rápida via Script (Windows):
-Basta dar um duplo clique no arquivo `executar.bat` presente na raiz do repositório, ou executar via PowerShell/Prompt de Comando:
-```bash
+### Execução em 1 Clique (Windows):
+Basta dar duplo clique no arquivo `executar.bat` presente na raiz do projeto, ou executar via terminal:
+```bat
 .\executar.bat
 ```
 
 ### Compilação e Execução Manual via Terminal:
-1. Abra o terminal na pasta raiz do projeto (`estacionamento-rotativo/`);
-2. Crie o diretório de classes compiladas:
-   ```bash
-   mkdir bin
-   ```
-3. Compile todos os arquivos `.java`:
-   ```bash
-   javac -encoding UTF-8 -d bin src/br/com/estacionamento/interfaces/*.java src/br/com/estacionamento/exception/*.java src/br/com/estacionamento/model/*.java src/br/com/estacionamento/view/*.java src/br/com/estacionamento/*.java
-   ```
-4. Execute o programa:
-   ```bash
-   java -cp bin br.com.estacionamento.Principal
-   ```
+```bat
+if not exist bin mkdir bin
+javac -encoding UTF-8 -d bin src\br\com\eventos\interfaces\*.java src\br\com\eventos\exception\*.java src\br\com\eventos\model\*.java src\br\com\eventos\view\*.java src\br\com\eventos\*.java
+java -cp bin br.com.eventos.Principal
+```
 
 ---
 
 ## 🤖 5. Histórico e Registro de Prompts de IA Generativa
 
-Em conformidade com a **Regra 2 (Uso de IA Generativa e Registro de Prompts)** descrita nas diretrizes do trabalho, registramos a seguir todo o processo de interação, os pedidos efetuados, as soluções obtidas e os refinamentos realizados.
+Em cumprimento à **Regra 2 (Uso de IA Generativa e Registro de Prompts)** estipulada no documento oficial da P2 pelo Prof. Maromo, segue o histórico transparente das interações:
 
-### 🔹 Interação 1: Definição de Arquitetura e Seleção de Tema
-- **O que foi pedido à IA:**
-  > "Estou iniciando a P2 da disciplina de Programação Orientada a Objetos com o Prof. Maromo. Seguem as regras do PDF: preciso escolher 1 dos 10 temas, trabalhar 100% em memória RAM com `List<Entidade> = new ArrayList<>()`, interface Swing com botões específicos, Checked Exception customizada, `Comparable<T>` com `Collections.sort()`, `equals()` e `hashCode()`, e interface de negócio com métodos abstratos e default/static. Qual o melhor tema e como modelar a arquitetura?"
+### 🔹 Interação 1: Análise e Adequação ao Tema 08
+- **O que foi solicitado à IA:**
+  > "Estou realizando a P2 com o Tema 08: Controle de Eventos e Venda de Ingressos. Faça um review completo do código existente no diretório `d:\Projetos_Pessoais\Controle-eventos-ingressos` e me aponte tudo o que falta para atender 100% aos requisitos dos materiais POO_07 a POO_10 do Prof. Maromo."
 - **Resposta obtida:**
-  A IA analisou os 10 temas propostos e sugeriu como melhor escolha o **Tema 03: Estacionamento Rotativo** (`TicketEstacionamento`, `Tarifavel`, `VagaNaoDisponivelException`). A justificativa foi a clareza prática das regras de negócio, a facilidade de simular permanência de veículos, e a elegância de demonstrar polimorfismo entre categorias de veículos (ex: Carros vs Motos) aplicando tarifas diferenciadas.
+  A IA identificou que:
+  1. A interface `Validavel` continha apenas o método abstrato, faltando métodos `default` e `static` exigidos pelo requisito 7 e página 3 do PDF;
+  2. A classe `Ingresso` não sobrescrevia `equals()`, `hashCode()` nem `toString()`, além de não possuir os setters conforme padrão JavaBean;
+  3. Faltava o botão explícito "Ordenar" acionando `Collections.sort()` com feedback ao usuário, bem como os nomes dos botões de ação exigidos na página 3 (`Cadastrar`, `Pesquisar`, `Processar Operação`, `Ordenar`, `Sair`);
+  4. Faltava a área de texto `JTextArea` dentro de `JScrollPane` para emissão do relatório consolidado de público;
+  5. O `README.md` não continha a identificação dos alunos nem o detalhamento dos prompts.
 - **Refinamento aplicado:**
-  Aprovamos a escolha do Tema 03 e definimos que a capacidade máxima de vagas no pátio seria delimitada para 5 veículos ativos, permitindo disparar e testar facilmente a `VagaNaoDisponivelException` durante a apresentação/avaliação.
+  Aprovadas as melhorias e autorizada a refatoração completa do projeto.
 
 ---
 
-### 🔹 Interação 2: Estruturação dos Modelos e Polimorfismo
-- **O que foi pedido à IA:**
-  > "Gere a interface `Tarifavel` contendo método abstrato de cálculo e métodos default e static do Java moderno. Em seguida crie a entidade abstrata `TicketEstacionamento` implementando `Comparable` (ordenando pelo horário de entrada), `equals`, `hashCode` e `toString`, e duas subclasses: `TicketCarro` e `TicketMoto` com tarifas e tolerância."
+### 🔹 Interação 2: Implementação de Polimorfismo e Métodos na Interface
+- **O que foi solicitado à IA:**
+  > "Atualize a interface `Validavel` com métodos default (formatação de moeda e instruções da catraca) e método static para cálculo de meia-entrada. Atualize `IngressoInteira` e `IngressoMeia` para demonstrar polimorfismo real de regras de negócio, onde a meia exige documento comprobatório."
 - **Resposta obtida:**
-  A IA gerou as classes com encapsulamento completo dos atributos, tratamento de nulos em `compareTo`, cálculo com arredondamento fracionário de horas e método de formatação monetária padrão `R$ %.2f`.
+  A IA reestruturou a interface com `formatarValor()`, `obterInstrucaoCatraca()` e `calcularValorMeia()`. Na classe `IngressoMeia`, foi adicionado o atributo `documentoComprovante` e a sobrescrita de `validarAcessoCatraca()` e `obterInstrucaoCatraca()`, especializando o comportamento na portaria.
 - **Refinamento aplicado:**
-  Ajustamos a visibilidade do formatador de data (`FORMATADOR_DATA_HORA`) para permitir que a classe de visão (`TelaEstacionamento`) também reutilizasse a mesma máscara na montagem das colunas do relatório, garantindo alinhamento uniforme.
+  Garantimos que o construtor sobrecarregado de `IngressoMeia` mantivesse um valor padrão caso nenhum documento fosse digitado, evitando exceções indevidas em vendas rápidas.
 
 ---
 
-### 🔹 Interação 3: Interface Gráfica javax.swing.* e Eventos
-- **O que foi pedido à IA:**
-  > "Construa o formulário Swing `TelaEstacionamento` estendendo `JFrame` e implementando diretamente `ActionListener` e `WindowListener`. A tela deve possuir: campos para placa, modelo, tipo de veículo, botões `Cadastrar`, `Pesquisar`, `Processar Operação`, `Ordenar`, `Limpar` e `Sair`, exibição em tempo real de vagas e área de texto `JTextArea` dentro de `JScrollPane`. As mensagens de erro e alertas devem usar `JOptionPane.showMessageDialog()`."
+### 🔹 Interação 3: Interface Gráfica Swing com Abas, Botões Canônicos e Relatório em JTextArea
+- **O que foi solicitado à IA:**
+  > "Refatore a `TelaEventos` para implementar diretamente `ActionListener` e `WindowListener`. Mantenha a tabela de ingressos que é muito visual, mas adicione uma aba com `JTextArea` para o Relatório de Público detalhado. Adicione os botões com os nomes exatos exigidos pelo professor e garanta tratamento de `NumberFormatException` e da checked exception via `JOptionPane`."
 - **Resposta obtida:**
-  A IA entregou o código com os layouts `BorderLayout`, `GridLayout` e `FlowLayout`, tratamento de eventos nos botões com `e.getSource()`, confirmação de saída via `JOptionPane.showConfirmDialog` e captura de exceções `NumberFormatException` e `VagaNaoDisponivelException`.
+  A IA criou um `JTabbedPane` com duas abas: a tabela visual e o relatório em texto monospaçado. Incluiu os botões `Cadastrar (Venda)`, `Pesquisar`, `Processar Operação (Catraca)`, `Cancelar Ingresso`, `Ordenar (Código)`, `Relatório de Público`, `Limpar` e `Sair`, com tratamento de eventos nos métodos canônicos.
 - **Refinamento aplicado:**
-  Adicionamos um campo extra facultativo chamado "Minutos de Estadia (Simulação para Baixa)". Isso permite ao professor/avaliador tanto testar o tempo real decorrido quanto digitar valores manuais (ex: 45 min, 90 min, 180 min) para validar de imediato as faixas de cobrança e tolerância sem precisar aguardar horas com o programa aberto.
+  Inseridos 3 registros de demonstração na inicialização da aplicação (um disponível, um utilizado e um cancelado) para que o professor consiga testar imediatamente a ordenação, a portaria e o relatório logo ao iniciar o programa.
 
 ---
 
-### 🔹 Interação 4: Validação de Compilação e Testes
-- **O que foi pedido à IA:**
-  > "Valide a compilação do projeto com o JDK instalado e elabore um teste unitário de regras de negócio validando ordenação por horário, polimorfismo de cálculo e o disparo da checked exception."
+### 🔹 Interação 4: Testes Automatizados e Homologação
+- **O que foi solicitado à IA:**
+  > "Escreva um teste de integração das regras de negócio para verificar se `Collections.sort()` ordena corretamente pelo código, se `equals()` e `hashCode()` funcionam com as subclasses polimórficas, e se a `IngressoInvalidoException` é disparada ao tentar reutilizar ingresso ou entrar com ingresso cancelado."
 - **Resposta obtida:**
-  O projeto compilou com sucesso sem nenhum aviso, e o teste automatizado confirmou que:
-  - 10 minutos permaneceu isento (R$ 0,00) pela tolerância de 15 minutos;
-  - Carro pagou R$ 12,00 por 45 min e R$ 18,00 por 90 min;
-  - Moto pagou R$ 7,00 por 45 min e R$ 10,50 por 90 min;
-  - A ordenação cronológica colocou os tickets na sequência correta de entrada;
-  - A `VagaNaoDisponivelException` foi devidamente disparada quando atingida a lotação máxima.
+  A IA executou os testes via terminal e detectou uma sutileza no `equals()`, que comparava `getClass() != o.getClass()` entre `IngressoMeia` e `IngressoInteira`. A IA refinou o método para usar `instanceof Ingresso`, permitindo a identificação polimórfica pelo código e evento. Todos os testes passaram com 100% de sucesso.
 - **Refinamento aplicado:**
-  Geração do script `executar.bat` com codificação UTF-8 (`chcp 65001`) para evitar problemas com caracteres acentuados no terminal do Windows.
+  Atualização do arquivo `README.md` com o histórico consolidado e compilação final bem-sucedida.

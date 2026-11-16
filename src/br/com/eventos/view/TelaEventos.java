@@ -9,6 +9,7 @@ import br.com.eventos.model.IngressoMeia;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -19,35 +20,46 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Interface Gráfica Moderna e Funcional em Java Swing (javax.swing.*).
- * Desenvolvida para a Avaliação P2 de POO (Prof. Maromo - FATEC Mogi Mirim).
- * Atende com rigor a todas as regras da disciplina:
+ * Interface Gráfica de Alto Padrão em Java Swing (javax.swing.*).
+ * Paleta Clean: Royal Blue & Frost (Estilo Stripe / Apple).
+ *
+ * Sistema 100% em conformidade com as diretrizes da P2 de POO:
  * - 100% em memória RAM (List<Ingresso>)
- * - Implementa ActionListener e WindowListener diretamente
+ * - Implementação explícita de ActionListener e WindowListener
  * - Botões padronizados: Cadastrar, Pesquisar, Processar Operação, Ordenar, Sair
- * - JTextArea para relatórios e JOptionPane para mensagens de erro/alerta
- * - Visual moderno, limpo e profissional com cards, badges e tipografia Segoe UI.
+ * - JTextArea para relatórios e JOptionPane para diálogos
+ * - Design moderno: Sombras suaves 2D, KPIs executivos, badges Tailwind, scrollbars finas.
  */
 public class TelaEventos extends JFrame implements ActionListener, WindowListener {
 
     private static final long serialVersionUID = 1L;
 
-    // Paleta de Cores Moderna (Estilo Tailwind / Clean Slate)
-    private static final Color COR_FUNDO = new Color(248, 250, 252);        // Slate 50
-    private static final Color COR_HEADER = new Color(15, 23, 42);          // Slate 900
-    private static final Color COR_PRIMARIA = new Color(37, 99, 235);       // Blue 600
-    private static final Color COR_SUCESSO = new Color(16, 185, 129);       // Emerald 500
-    private static final Color COR_PERIGO = new Color(239, 68, 68);         // Rose 500
-    private static final Color COR_AMBAR = new Color(245, 158, 11);         // Amber 500
+    // =========================================================================
+    // PALETA CLEAN: ROYAL BLUE & FROST (4 CORES BASE + ESTADOS)
+    // =========================================================================
+    // 1. Fundo Canvas: Gelo Suave
+    private static final Color COR_CANVAS = new Color(248, 250, 252);       // Slate 50
+    // 2. Superfície / Cards: Branco Puro
+    private static final Color COR_CARD = new Color(255, 255, 255);         // White
+    // 3. Acento Principal: Azul Royal Vibrante
+    private static final Color COR_PRIMARY = new Color(37, 99, 235);        // Royal Blue 600
+    private static final Color COR_PRIMARY_HOVER = new Color(29, 78, 216);  // Royal Blue 700
+    private static final Color COR_PRIMARY_LIGHT = new Color(239, 246, 255);// Blue 50
+    // 4. Texto & Contraste: Grafite Profundo e Muted
     private static final Color COR_TEXTO = new Color(15, 23, 42);           // Slate 900
     private static final Color COR_MUTED = new Color(100, 116, 139);        // Slate 500
     private static final Color COR_BORDA = new Color(226, 232, 240);        // Slate 200
 
-    // Persistência 100% em memória RAM (Requisito da P2)
+    // Estados Funcionais Discretos
+    private static final Color COR_SUCESSO = new Color(16, 185, 129);       // Emerald 500
+    private static final Color COR_PERIGO = new Color(239, 68, 68);         // Rose 500
+    private static final Color COR_AMBAR = new Color(217, 119, 6);          // Amber 600
+
+    // Coleção 100% em Memória RAM
     private final List<Ingresso> listaIngressos = new ArrayList<>();
     private int contadorSequencial = 1;
 
-    // Componentes de Entrada
+    // Componentes de Formulário
     private JTextField txtEvento;
     private JTextField txtParticipante;
     private JTextField txtValorInteira;
@@ -56,7 +68,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     private JLabel lblDocumentoMeia;
     private JTextField txtCodigoOperacao;
 
-    // Botões de Ação Obrigatórios pelo PDF
+    // Botões Canônicos Exigidos na Pág. 3
     private JButton btnCadastrar;
     private JButton btnPesquisar;
     private JButton btnProcessarOperacao;
@@ -72,14 +84,14 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     private JTable tabela;
     private JTextArea txtRelatorioPublico;
 
-    // Cards de Métricas em Tempo Real (KPIs)
+    // Cards de KPIs Executivos
     private CardKPI kpiTotal;
     private CardKPI kpiPresentes;
     private CardKPI kpiCancelados;
     private CardKPI kpiReceita;
 
     public TelaEventos() {
-        super("Bilheteria & Controle de Eventos - Sistema Orientado a Objetos (POO)");
+        super("Bilheteria & Controle de Eventos - Avaliação P2 POO (Prof. Maromo)");
         configurarJanela();
         construirInterface();
         inicializarDadosDemonstracao();
@@ -87,24 +99,24 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     }
 
     private void configurarJanela() {
-        setSize(1200, 800);
-        setMinimumSize(new Dimension(1040, 720));
+        setSize(1220, 820);
+        setMinimumSize(new Dimension(1060, 740));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(this);
     }
 
     private void construirInterface() {
-        JPanel painelPrincipal = new JPanel(new BorderLayout(0, 14));
-        painelPrincipal.setBackground(COR_FUNDO);
-        painelPrincipal.setBorder(new EmptyBorder(16, 18, 16, 18));
+        JPanel painelPrincipal = new JPanel(new BorderLayout(0, 16));
+        painelPrincipal.setBackground(COR_CANVAS);
+        painelPrincipal.setBorder(new EmptyBorder(16, 20, 18, 20));
         setContentPane(painelPrincipal);
 
-        // 1. Barra de Topo Moderna
+        // 1. Header Bar Escura Elegante com detalhe em Azul Royal
         painelPrincipal.add(criarBarraCabecalho(), BorderLayout.NORTH);
 
         // 2. Área Central Dividida (Esquerda: Formulários / Direita: KPIs + Tabela / Relatório)
-        JPanel painelCentral = new JPanel(new BorderLayout(14, 0));
+        JPanel painelCentral = new JPanel(new BorderLayout(16, 0));
         painelCentral.setOpaque(false);
 
         painelCentral.add(criarColunaEsquerdaFormularios(), BorderLayout.WEST);
@@ -114,26 +126,30 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     }
 
     /**
-     * Cabeçalho moderno com visual escuro elegante, título e status do sistema.
+     * Barra de Cabeçalho Superior com relevo suave e indicador de status.
      */
     private JPanel criarBarraCabecalho() {
-        JPanel header = new JPanel(new BorderLayout(10, 5)) {
+        JPanel header = new JPanel(new BorderLayout(12, 4)) {
             private static final long serialVersionUID = 1L;
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(COR_HEADER);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                // Fundo Escuro Slate 900
+                g2.setColor(COR_TEXTO);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
+                // Linha de acento inferior em Azul Royal
+                g2.setColor(COR_PRIMARY);
+                g2.fillRect(0, getHeight() - 4, getWidth(), 4);
                 g2.dispose();
                 super.paintComponent(g);
             }
         };
         header.setOpaque(false);
-        header.setBorder(new EmptyBorder(14, 20, 14, 20));
+        header.setBorder(new EmptyBorder(14, 22, 16, 22));
 
-        // Título e Subtítulo
-        JPanel painelTitulos = new JPanel(new GridLayout(2, 1, 0, 2));
+        // Títulos
+        JPanel painelTitulos = new JPanel(new GridLayout(2, 1, 0, 3));
         painelTitulos.setOpaque(false);
 
         JLabel lblTitulo = new JLabel("CONTROLE DE EVENTOS & BILHETERIA DIGITAL");
@@ -148,21 +164,21 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         painelTitulos.add(lblSubtitulo);
         header.add(painelTitulos, BorderLayout.WEST);
 
-        // Badge lateral de status
+        // Indicador de Sessão em Memória
         JPanel painelStatus = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
         painelStatus.setOpaque(false);
 
-        JLabel lblBadge = new JLabel("● SESSÃO ATIVA (100% RAM)");
-        lblBadge.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblBadge.setForeground(new Color(74, 222, 128)); // Emerald 400
-        painelStatus.add(lblBadge);
+        JLabel lblPulse = new JLabel("● SESSÃO ATIVA (100% RAM)");
+        lblPulse.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblPulse.setForeground(new Color(52, 211, 153)); // Emerald 400
+        painelStatus.add(lblPulse);
 
         header.add(painelStatus, BorderLayout.EAST);
         return header;
     }
 
     /**
-     * Coluna da esquerda: Cards para Venda (Cadastro) e Operações de Portaria (Baixa/Cancelamento).
+     * Coluna da esquerda com Cards Flutuantes (Sombras 2D) para Venda e Portaria.
      */
     private JPanel criarColunaEsquerdaFormularios() {
         JPanel coluna = new JPanel();
@@ -170,7 +186,9 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         coluna.setOpaque(false);
         coluna.setPreferredSize(new Dimension(390, 0));
 
-        // --- CARD 1: FORMULÁRIO DE VENDA (CADASTRAR) ---
+        // =====================================================================
+        // CARD 1: FORMULÁRIO DE NOVA VENDA (CADASTRAR)
+        // =====================================================================
         PainelCard cardVenda = new PainelCard();
         cardVenda.setLayout(new BoxLayout(cardVenda, BoxLayout.Y_AXIS));
 
@@ -179,7 +197,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         tituloVenda.setForeground(COR_TEXTO);
         tituloVenda.setAlignmentX(Component.LEFT_ALIGNMENT);
         cardVenda.add(tituloVenda);
-        cardVenda.add(Box.createVerticalStrut(10));
+        cardVenda.add(Box.createVerticalStrut(12));
 
         cardVenda.add(criarRotuloCampo("Nome do Evento:"));
         txtEvento = criarCampoTexto();
@@ -191,7 +209,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         cardVenda.add(txtParticipante);
         cardVenda.add(Box.createVerticalStrut(8));
 
-        JPanel linhaTipoValor = new JPanel(new GridLayout(1, 2, 8, 0));
+        JPanel linhaTipoValor = new JPanel(new GridLayout(1, 2, 10, 0));
         linhaTipoValor.setOpaque(false);
         linhaTipoValor.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
 
@@ -224,18 +242,20 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         txtDocumentoMeia.setText("Carteirinha de Estudante / DNE");
         txtDocumentoMeia.setEnabled(false);
         cardVenda.add(txtDocumentoMeia);
-        cardVenda.add(Box.createVerticalStrut(12));
+        cardVenda.add(Box.createVerticalStrut(14));
 
-        btnCadastrar = new BotaoModerno("+ Cadastrar (Registrar Venda)", COR_PRIMARIA, Color.WHITE);
+        btnCadastrar = new BotaoModerno("+ Cadastrar (Registrar Venda)", COR_PRIMARY, Color.WHITE, true);
         btnCadastrar.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnCadastrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         btnCadastrar.addActionListener(this);
         cardVenda.add(btnCadastrar);
 
         coluna.add(cardVenda);
-        coluna.add(Box.createVerticalStrut(12));
+        coluna.add(Box.createVerticalStrut(14));
 
-        // --- CARD 2: OPERAÇÕES DE PORTARIA & CONSULTA ---
+        // =====================================================================
+        // CARD 2: OPERAÇÕES DE PORTARIA & CONSULTA
+        // =====================================================================
         PainelCard cardOperacoes = new PainelCard();
         cardOperacoes.setLayout(new BoxLayout(cardOperacoes, BoxLayout.Y_AXIS));
 
@@ -244,11 +264,10 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         tituloOperacoes.setForeground(COR_TEXTO);
         tituloOperacoes.setAlignmentX(Component.LEFT_ALIGNMENT);
         cardOperacoes.add(tituloOperacoes);
-        cardOperacoes.add(Box.createVerticalStrut(10));
+        cardOperacoes.add(Box.createVerticalStrut(12));
 
-        cardOperacoes.add(criarRotuloCampo("Código do Bilhete (para operações):"));
+        cardOperacoes.add(criarRotuloCampo("Código do Bilhete:"));
 
-        // Painel para campo de código e botão pesquisar alinhados com altura fixa
         JPanel linhaCodigoBusca = new JPanel(new BorderLayout(8, 0));
         linhaCodigoBusca.setOpaque(false);
         linhaCodigoBusca.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
@@ -258,7 +277,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         txtCodigoOperacao.setFont(new Font("Segoe UI", Font.BOLD, 13));
         linhaCodigoBusca.add(txtCodigoOperacao, BorderLayout.CENTER);
 
-        btnPesquisar = new BotaoModerno("Pesquisar", new Color(241, 245, 249), COR_TEXTO);
+        btnPesquisar = new BotaoModerno("Pesquisar", new Color(241, 245, 249), COR_TEXTO, false);
         btnPesquisar.addActionListener(this);
         linhaCodigoBusca.add(btnPesquisar, BorderLayout.EAST);
 
@@ -266,8 +285,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         cardOperacoes.add(linhaCodigoBusca);
         cardOperacoes.add(Box.createVerticalStrut(12));
 
-        // Botões de Ação da Portaria
-        btnProcessarOperacao = new BotaoModerno("Processar Operação (Catraca)", COR_SUCESSO, Color.WHITE);
+        btnProcessarOperacao = new BotaoModerno("Processar Operação (Catraca)", COR_SUCESSO, Color.WHITE, true);
         btnProcessarOperacao.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnProcessarOperacao.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         btnProcessarOperacao.addActionListener(this);
@@ -278,11 +296,11 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         linhaAuxiliar.setOpaque(false);
         linhaAuxiliar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
 
-        btnCancelar = new BotaoModerno("Cancelar", new Color(254, 226, 226), COR_PERIGO);
+        btnCancelar = new BotaoModerno("Cancelar", new Color(254, 242, 242), COR_PERIGO, false);
         btnCancelar.addActionListener(this);
         linhaAuxiliar.add(btnCancelar);
 
-        btnLimpar = new BotaoModerno("Limpar", new Color(241, 245, 249), COR_MUTED);
+        btnLimpar = new BotaoModerno("Limpar", new Color(241, 245, 249), COR_MUTED, false);
         btnLimpar.addActionListener(this);
         linhaAuxiliar.add(btnLimpar);
 
@@ -294,18 +312,18 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     }
 
     /**
-     * Coluna da direita: Indicadores (KPIs) no topo e Abas (Tabela + Relatório JTextArea) com barra de ações.
+     * Coluna da direita: 4 KPIs Executivos no topo + Abas com Tabela e JTextArea.
      */
     private JPanel criarColunaDireitaVisualizacoes() {
-        JPanel painel = new JPanel(new BorderLayout(0, 12));
+        JPanel painel = new JPanel(new BorderLayout(0, 14));
         painel.setOpaque(false);
 
-        // 1. Linha de KPIs (Cards de Resumo Estatístico)
-        JPanel painelKPIs = new JPanel(new GridLayout(1, 4, 10, 0));
+        // 1. Linha com 4 Cards de Métricas (KPIs)
+        JPanel painelKPIs = new JPanel(new GridLayout(1, 4, 12, 0));
         painelKPIs.setOpaque(false);
-        painelKPIs.setPreferredSize(new Dimension(0, 68));
+        painelKPIs.setPreferredSize(new Dimension(0, 72));
 
-        kpiTotal = new CardKPI("TOTAL EMITIDOS", "0", COR_PRIMARIA);
+        kpiTotal = new CardKPI("TOTAL EMITIDOS", "0", COR_PRIMARY);
         kpiPresentes = new CardKPI("PÚBLICO CATRACA", "0", COR_SUCESSO);
         kpiCancelados = new CardKPI("CANCELADOS", "0", COR_PERIGO);
         kpiReceita = new CardKPI("RECEITA TOTAL", "R$ 0,00", new Color(124, 58, 237));
@@ -316,42 +334,42 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         painelKPIs.add(kpiReceita);
         painel.add(painelKPIs, BorderLayout.NORTH);
 
-        // 2. Centro: Abas com Tabela e JTextArea
+        // 2. Card Central com Abas
         PainelCard cardAbas = new PainelCard();
-        cardAbas.setLayout(new BorderLayout(0, 8));
+        cardAbas.setLayout(new BorderLayout(0, 10));
 
-        // Barra de Ferramentas acima das abas com layout sem colisões
-        JPanel barraSuperiorAbas = new JPanel(new BorderLayout(8, 0));
-        barraSuperiorAbas.setOpaque(false);
+        // Barra superior de ações
+        JPanel barraSuperior = new JPanel(new BorderLayout(8, 0));
+        barraSuperior.setOpaque(false);
 
-        JLabel lblDica = new JLabel("Dica: Clique em qualquer linha para preencher o código");
+        JLabel lblDica = new JLabel("Dica: Clique em qualquer linha para carregar o código instantaneamente");
         lblDica.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblDica.setForeground(COR_MUTED);
-        barraSuperiorAbas.add(lblDica, BorderLayout.WEST);
+        barraSuperior.add(lblDica, BorderLayout.WEST);
 
         JPanel botoesAcao = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         botoesAcao.setOpaque(false);
 
-        btnOrdenar = new BotaoModerno("Ordenar (Código)", new Color(254, 243, 199), new Color(180, 83, 9));
+        btnOrdenar = new BotaoModerno("Ordenar (Código)", new Color(254, 243, 199), COR_AMBAR, false);
         btnOrdenar.addActionListener(this);
         botoesAcao.add(btnOrdenar);
 
-        btnRelatorio = new BotaoModerno("Relatório de Público", new Color(243, 232, 255), new Color(126, 34, 206));
+        btnRelatorio = new BotaoModerno("Relatório de Público", new Color(243, 232, 255), new Color(126, 34, 206), false);
         btnRelatorio.addActionListener(this);
         botoesAcao.add(btnRelatorio);
 
-        btnSair = new BotaoModerno("Sair", new Color(254, 226, 226), COR_PERIGO);
+        btnSair = new BotaoModerno("Sair", new Color(254, 242, 242), COR_PERIGO, false);
         btnSair.addActionListener(this);
         botoesAcao.add(btnSair);
 
-        barraSuperiorAbas.add(botoesAcao, BorderLayout.EAST);
-        cardAbas.add(barraSuperiorAbas, BorderLayout.NORTH);
+        barraSuperior.add(botoesAcao, BorderLayout.EAST);
+        cardAbas.add(barraSuperior, BorderLayout.NORTH);
 
         // Configuração das Abas
         abasVisualizacao = new JTabbedPane();
         abasVisualizacao.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        // Aba 1: Tabela Dinâmica
+        // Aba 1: Tabela Dinâmica com Renderizadores Modernos
         modeloTabela = new DefaultTableModel(new Object[]{"Código", "Evento", "Participante", "Tipo", "Valor (R$)", "Status do Bilhete", "Acesso Catraca"}, 0) {
             private static final long serialVersionUID = 1L;
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -370,8 +388,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         });
 
         JScrollPane scrollTabela = new JScrollPane(tabela);
-        scrollTabela.setBorder(new LineBorder(COR_BORDA, 1));
-        scrollTabela.getViewport().setBackground(Color.WHITE);
+        aplicarScrollbarModerna(scrollTabela);
         abasVisualizacao.addTab("Grade de Ingressos (Tabela)", scrollTabela);
 
         // Aba 2: JTextArea Exigida pelo PDF para Relatórios
@@ -379,10 +396,10 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         txtRelatorioPublico.setEditable(false);
         txtRelatorioPublico.setFont(new Font("Consolas", Font.PLAIN, 12));
         txtRelatorioPublico.setBackground(new Color(250, 252, 255));
-        txtRelatorioPublico.setBorder(new EmptyBorder(12, 14, 12, 14));
+        txtRelatorioPublico.setBorder(new EmptyBorder(14, 16, 14, 16));
 
         JScrollPane scrollRelatorio = new JScrollPane(txtRelatorioPublico);
-        scrollRelatorio.setBorder(new LineBorder(COR_BORDA, 1));
+        aplicarScrollbarModerna(scrollRelatorio);
         abasVisualizacao.addTab("Extrato & Relatório Executivo (JTextArea)", scrollRelatorio);
 
         cardAbas.add(abasVisualizacao, BorderLayout.CENTER);
@@ -392,21 +409,21 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     }
 
     private void configurarEstiloTabela(JTable tab) {
-        tab.setRowHeight(36);
+        tab.setRowHeight(38);
         tab.setFillsViewportHeight(true);
         tab.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tab.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tab.setShowVerticalLines(false);
         tab.setShowHorizontalLines(true);
         tab.setGridColor(new Color(241, 245, 249));
-        tab.setSelectionBackground(new Color(224, 238, 254)); // Soft blue highlight
+        tab.setSelectionBackground(new Color(224, 238, 254)); // Soft Blue highlight
         tab.setSelectionForeground(COR_TEXTO);
 
         JTableHeader th = tab.getTableHeader();
         th.setFont(new Font("Segoe UI", Font.BOLD, 12));
         th.setBackground(new Color(241, 245, 249));
         th.setForeground(new Color(71, 85, 105));
-        th.setPreferredSize(new Dimension(0, 36));
+        th.setPreferredSize(new Dimension(0, 38));
         th.setReorderingAllowed(false);
 
         // Larguras proporcionais
@@ -415,15 +432,24 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             tab.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
         }
 
-        // Renderizador centralizado para Código e Alinhado para Valores
+        // Alinhamento das colunas
         DefaultTableCellRenderer centro = new DefaultTableCellRenderer();
         centro.setHorizontalAlignment(SwingConstants.CENTER);
         tab.getColumnModel().getColumn(0).setCellRenderer(centro);
         tab.getColumnModel().getColumn(4).setCellRenderer(centro);
         tab.getColumnModel().getColumn(6).setCellRenderer(centro);
 
-        // Renderizador de Badges Coloridos na Coluna Status (Tailwind Style)
+        // Renderizador de Badges Coloridos de Status (Tailwind Style)
         tab.getColumnModel().getColumn(5).setCellRenderer(new BadgeRenderer());
+    }
+
+    private void aplicarScrollbarModerna(JScrollPane scroll) {
+        scroll.setBorder(new LineBorder(COR_BORDA, 1));
+        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.getVerticalScrollBar().setUI(new ModernScrollBarUI());
+        scroll.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
+        scroll.getVerticalScrollBar().setPreferredSize(new Dimension(8, 0));
+        scroll.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 8));
     }
 
     private void alternarCampoDocumentoMeia() {
@@ -447,24 +473,24 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         JTextField campo = new JTextField();
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         campo.setAlignmentX(Component.LEFT_ALIGNMENT);
-        campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
-        campo.setPreferredSize(new Dimension(100, 32));
+        campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        campo.setPreferredSize(new Dimension(100, 34));
         campo.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(COR_BORDA, 1),
-                new EmptyBorder(3, 8, 3, 8)));
+                new EmptyBorder(3, 10, 3, 10)));
 
         campo.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 campo.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(COR_PRIMARIA, 2),
-                        new EmptyBorder(2, 7, 2, 7)));
+                        new LineBorder(COR_PRIMARY, 2),
+                        new EmptyBorder(2, 9, 2, 9)));
             }
             @Override
             public void focusLost(FocusEvent e) {
                 campo.setBorder(BorderFactory.createCompoundBorder(
                         new LineBorder(COR_BORDA, 1),
-                        new EmptyBorder(3, 8, 3, 8)));
+                        new EmptyBorder(3, 10, 3, 10)));
             }
         });
         return campo;
@@ -898,27 +924,44 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
     @Override public void windowDeactivated(WindowEvent e) {}
 
     // =========================================================================
-    // COMPONENTES MODERNOS CUSTOMIZADOS (100% PURE JAVA SWING)
+    // COMPONENTES MODERNOS COM SOMBRA E ESTILO 2D (PURE JAVA SWING)
     // =========================================================================
 
     /**
-     * Card moderno com fundo branco, cantos arredondados e borda sutil Slate.
+     * Card moderno flutuante com sombreamento suave (Drop Shadow em Java 2D).
      */
     static class PainelCard extends JPanel {
         private static final long serialVersionUID = 1L;
+
         public PainelCard() {
             setOpaque(false);
-            setBorder(new EmptyBorder(14, 16, 14, 16));
+            setBorder(new EmptyBorder(16, 18, 16, 18));
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.WHITE);
-            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+
+            int x = 2;
+            int y = 2;
+            int w = getWidth() - 5;
+            int h = getHeight() - 5;
+
+            // Sombra suave (Drop Shadow)
+            g2.setColor(new Color(15, 23, 42, 6));
+            g2.fillRoundRect(x + 1, y + 3, w, h, 16, 16);
+            g2.setColor(new Color(15, 23, 42, 12));
+            g2.fillRoundRect(x, y + 1, w, h, 16, 16);
+
+            // Fundo Branco Puro
+            g2.setColor(COR_CARD);
+            g2.fillRoundRect(x, y, w, h, 14, 14);
+
+            // Borda Sutil Slate 200
             g2.setColor(COR_BORDA);
-            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+            g2.drawRoundRect(x, y, w, h, 14, 14);
+
             g2.dispose();
             super.paintComponent(g);
         }
@@ -931,12 +974,14 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         private static final long serialVersionUID = 1L;
         private final Color corFundo;
         private final Color corHover;
+        private final boolean temSombra;
         private boolean hover = false;
 
-        public BotaoModerno(String texto, Color fundo, Color frente) {
+        public BotaoModerno(String texto, Color fundo, Color frente, boolean temSombra) {
             super(texto);
             this.corFundo = fundo;
             this.corHover = escurecerCor(fundo, 0.12f);
+            this.temSombra = temSombra;
             setForeground(frente);
             setFont(new Font("Segoe UI", Font.BOLD, 12));
             setFocusPainted(false);
@@ -962,21 +1007,29 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            if (temSombra) {
+                g2.setColor(new Color(15, 23, 42, 18));
+                g2.fillRoundRect(1, 2, getWidth() - 2, getHeight() - 2, 10, 10);
+            }
+
             g2.setColor(hover ? corHover : corFundo);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+            g2.fillRoundRect(0, 0, getWidth() - (temSombra ? 1 : 0), getHeight() - (temSombra ? 1 : 0), 8, 8);
             g2.dispose();
             super.paintComponent(g);
         }
     }
 
     /**
-     * Card KPI moderno com métrica em destaque numérico e legenda.
+     * Card KPI moderno estilo Stripe com métrica em destaque e barra de acento.
      */
     static class CardKPI extends JPanel {
         private static final long serialVersionUID = 1L;
         private final JLabel lblValor;
+        private final Color corAcento;
 
         public CardKPI(String titulo, String valorInicial, Color corDestaque) {
+            this.corAcento = corDestaque;
             setLayout(new BorderLayout(4, 3));
             setOpaque(false);
             setBorder(new EmptyBorder(10, 14, 10, 14));
@@ -986,7 +1039,7 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             lblTitulo.setForeground(COR_MUTED);
 
             lblValor = new JLabel(valorInicial);
-            lblValor.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            lblValor.setFont(new Font("Segoe UI", Font.BOLD, 19));
             lblValor.setForeground(corDestaque);
 
             add(lblTitulo, BorderLayout.NORTH);
@@ -1001,17 +1054,31 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int w = getWidth() - 3;
+            int h = getHeight() - 3;
+
+            // Sombra suave
+            g2.setColor(new Color(15, 23, 42, 8));
+            g2.fillRoundRect(1, 2, w, h, 12, 12);
+
+            // Card Branco
             g2.setColor(Color.WHITE);
-            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            g2.fillRoundRect(0, 0, w, h, 12, 12);
             g2.setColor(COR_BORDA);
-            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            g2.drawRoundRect(0, 0, w, h, 12, 12);
+
+            // Pequena linha de acento colorida na lateral esquerda
+            g2.setColor(corAcento);
+            g2.fillRoundRect(0, 0, 4, h, 4, 4);
+
             g2.dispose();
             super.paintComponent(g);
         }
     }
 
     /**
-     * Renderizador de Badges / Pílulas modernas para a coluna de Status.
+     * Renderizador de Badges / Pílulas modernas (Tailwind Style) para a coluna de Status.
      */
     static class BadgeRenderer extends DefaultTableCellRenderer {
         private static final long serialVersionUID = 1L;
@@ -1025,19 +1092,63 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
 
             String status = (value != null) ? value.toString() : "";
             if (status.contains("Utilizado") || status.contains("Realizado")) {
-                label.setBackground(new Color(209, 250, 229)); // Verde Esmeralda #D1FAE5
-                label.setForeground(new Color(6, 95, 70));     // Verde Escuro #065F46
+                label.setBackground(new Color(236, 253, 245)); // Emerald 50
+                label.setForeground(new Color(4, 120, 87));     // Emerald 700
             } else if (status.contains("Cancelado")) {
-                label.setBackground(new Color(254, 226, 226)); // Vermelho Suave #FEE2E2
-                label.setForeground(new Color(153, 27, 27));   // Vermelho Escuro #991B1B
+                label.setBackground(new Color(254, 242, 242)); // Rose 50
+                label.setForeground(new Color(185, 28, 28));    // Rose 700
             } else {
-                label.setBackground(new Color(219, 234, 254)); // Azul Suave #DBEAFE
-                label.setForeground(new Color(30, 64, 175));   // Azul Escuro #1E40AF
+                label.setBackground(COR_PRIMARY_LIGHT);        // Blue 50
+                label.setForeground(COR_PRIMARY_HOVER);        // Blue 700
             }
 
             label.setOpaque(true);
             label.setBorder(new EmptyBorder(3, 8, 3, 8));
             return label;
+        }
+    }
+
+    /**
+     * Barra de Rolagem Minimalista e Fina (Estilo macOS / Chrome).
+     */
+    static class ModernScrollBarUI extends BasicScrollBarUI {
+        @Override
+        protected void configureScrollBarColors() {
+            this.thumbColor = new Color(203, 213, 225); // Slate 300
+            this.trackColor = Color.WHITE;
+        }
+
+        @Override
+        protected JButton createDecreaseButton(int orientation) {
+            return criarBotaoVazio();
+        }
+
+        @Override
+        protected JButton createIncreaseButton(int orientation) {
+            return criarBotaoVazio();
+        }
+
+        private JButton criarBotaoVazio() {
+            JButton b = new JButton();
+            b.setPreferredSize(new Dimension(0, 0));
+            b.setMinimumSize(new Dimension(0, 0));
+            b.setMaximumSize(new Dimension(0, 0));
+            return b;
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+            if (thumbBounds.isEmpty() || !scrollbar.isEnabled()) return;
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(isThumbRollover() ? new Color(148, 163, 184) : thumbColor);
+            g2.fillRoundRect(thumbBounds.x + 1, thumbBounds.y + 1, thumbBounds.width - 2, thumbBounds.height - 2, 6, 6);
+            g2.dispose();
+        }
+
+        @Override
+        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+            // Track limpo sem fundo cinza pesado
         }
     }
 }

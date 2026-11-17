@@ -63,7 +63,7 @@ A tela principal foi organizada em duas colunas para separar entrada de dados e 
 
 ### Aba Relatório de Público (`JTextArea`)
 
-![Relatório de Público e Bilheteria](docs/tela-relatorio.jpg)
+![Relatório de Público e Bilheteria](docs/tela-relatorio.png)
 
 ---
 
@@ -75,7 +75,7 @@ A tela principal foi organizada em duas colunas para separar entrada de dados e 
 Controle-eventos-ingressos/
 ├── docs/
 │   ├── tela-principal.png
-│   └── tela-relatorio.jpg
+│   └── tela-relatorio.png
 ├── src/
 │   └── br/
 │       └── com/
@@ -255,18 +255,19 @@ java -cp bin br.com.eventos.view.Principal
 
 ## 6. Roteiro de Testes Manuais
 
-A aplicação inicia com **3 ingressos pré-cadastrados** (`#1 Disponível`, `#2 Utilizado` e `#3 Cancelado`) para agilizar a conferência das funcionalidades:
+A aplicação inicia com a lista em memória vazia (`0` registros). Para validar todas as regras de negócio durante a correção, siga a sequência abaixo:
 
 | Cenário | Ação na Interface | Resultado Esperado |
 | :--- | :--- | :--- |
-| **Venda Inteira** | Preencher Evento, Participante, tipo `Inteira`, Valor `120,00` e clicar em `Cadastrar` | Bilhete `#4` criado com valor `R$ 120,00`, status `Disponível` e totalizadores atualizados. |
-| **Venda Meia-entrada** | Selecionar `Meia-entrada (50%)`, informar Valor `120,00` e comprovante, clicar em `Cadastrar` | Campo de comprovante habilita automaticamente; bilhete `#5` criado com `R$ 60,00` via `Validavel.calcularValorMeia()`. |
+| **Venda Inteira** | Preencher Evento, Participante, tipo `Inteira`, Valor `120,00` e clicar em `Cadastrar` | Bilhete `#1` criado com valor `R$ 120,00`, status `Disponível` e totalizadores atualizados. |
+| **Venda Meia-entrada** | Selecionar `Meia-entrada (50%)`, informar Valor `120,00` e comprovante, clicar em `Cadastrar` | Campo de comprovante habilita automaticamente; bilhete `#2` criado com `R$ 60,00` via `Validavel.calcularValorMeia()`. |
 | **Erro de formato numérico** | Informar `abc` em `Valor Inteira` ou no `Código do Bilhete` e acionar a operação | `NumberFormatException` capturada e mensagem exibida via `JOptionPane.showMessageDialog()`. |
 | **Pesquisa** | Digitar `2` no campo `Código do Bilhete` (ou um nome em `Participante`) e clicar em `Pesquisar` | Campos preenchidos com os dados do bilhete localizado e linha selecionada na tabela. |
 | **Validação na catraca** | Selecionar o bilhete `#1` (`Disponível`) e clicar em `Processar Operação` | Diálogo exibe a orientação polimórfica da portaria; ao confirmar, status muda para `Utilizado` com data/hora registrada. |
-| **Exceção — Acesso duplicado** | Selecionar o bilhete `#2` (`Utilizado`) e clicar em `Processar Operação` | Dispara `IngressoInvalidoException` com aviso via `JOptionPane` informando o horário do uso anterior. |
-| **Exceção — Ingresso cancelado** | Selecionar o bilhete `#3` (`Cancelado`) e clicar em `Processar Operação` | Dispara `IngressoInvalidoException` negando a liberação na catraca. |
-| **Exceção — Cancelar bilhete usado** | Selecionar o bilhete `#2` (`Utilizado`) e clicar em `Cancelar` | Dispara `IngressoInvalidoException` impedindo o cancelamento de bilhete já utilizado. |
+| **Exceção — Acesso duplicado** | Selecionar o bilhete `#1` (já `Utilizado`) e clicar em `Processar Operação` novamente | Dispara `IngressoInvalidoException` com aviso via `JOptionPane` informando o horário do uso anterior. |
+| **Exceção — Cancelar bilhete usado** | Selecionar o bilhete `#1` (`Utilizado`) e clicar em `Cancelar` | Dispara `IngressoInvalidoException` impedindo o cancelamento de bilhete já utilizado. |
+| **Cancelamento válido** | Selecionar o bilhete `#2` (`Disponível`) e clicar em `Cancelar` | Status alterado para `Cancelado` e receita ativa recalculada. |
+| **Exceção — Ingresso cancelado** | Selecionar o bilhete `#2` (`Cancelado`) e clicar em `Processar Operação` | Dispara `IngressoInvalidoException` negando a liberação na catraca. |
 | **Ordenação natural** | Clicar em `Ordenar` | Executa `Collections.sort(listaIngressos)` ordenando pelo código sequencial via `Comparable<Ingresso>`. |
 | **Relatório de público** | Clicar em `Relatório` (ou na aba `Relatório de Público`) | Exibe o consolidado de emitidos, válidos, cancelados, público presente, taxa de comparecimento, receita e listagem completa no `JTextArea`. |
 | **Fechamento da janela** | Clicar em `Sair` ou no botão `X` da janela | `WindowListener` intercepta o fechamento e solicita confirmação antes de encerrar a sessão em memória. |

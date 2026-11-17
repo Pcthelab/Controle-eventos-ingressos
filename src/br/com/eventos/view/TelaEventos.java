@@ -116,7 +116,6 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
         super("Controle de Eventos e Venda de Ingressos");
         configurarJanela();
         construirInterface();
-        inicializarDadosIniciais();
         atualizarInterface();
     }
 
@@ -586,22 +585,6 @@ public class TelaEventos extends JFrame implements ActionListener, WindowListene
             }
         });
         return campo;
-    }
-
-    private void inicializarDadosIniciais() {
-        Ingresso i1 = new IngressoInteira(contadorSequencial++, "Festival de Rock", "Carlos Eduardo", 160.00);
-        IngressoMeia i2 = new IngressoMeia(contadorSequencial++, "Festival de Rock", "Mariana Silva", 80.00, "DNE #4821");
-        Ingresso i3 = new IngressoInteira(contadorSequencial++, "Festival de Rock", "Lucas Ferreira", 160.00);
-
-        try {
-            i2.validarAcessoCatraca();
-            i3.cancelar();
-        } catch (IngressoInvalidoException ignored) {
-        }
-
-        listaIngressos.add(i1);
-        listaIngressos.add(i2);
-        listaIngressos.add(i3);
     }
 
     private void cadastrarIngresso() {

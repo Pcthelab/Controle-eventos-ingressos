@@ -1,8 +1,5 @@
 package br.com.eventos.model;
 
-/**
- * Representa um Ingresso do tipo Inteira (Requisito POO_07 e POO_10).
- */
 public class IngressoInteira extends Ingresso {
 
     public IngressoInteira() {
@@ -20,6 +17,6 @@ public class IngressoInteira extends Ingresso {
 
     @Override
     public String obterInstrucaoCatraca() {
-        return "Acesso Inteira: Conferência simples de bilhete e liberação direta.";
+        return "Acesso Inteira: conferência simples do bilhete e liberação direta.";
     }
 }

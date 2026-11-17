@@ -1,203 +1,305 @@
-# Sistema de Controle de Eventos e Venda de Ingressos (Swing + Java Collections)
+# Controle de Eventos e Venda de Ingressos
 
-Projeto Prático referente à **Avaliação P2** da disciplina de **Programação Orientada a Objetos (POO)**.  
-**Professor:** Prof. Mestre Marcos Roberto de Moraes (Maromo)  
-**Instituição:** FATEC Mogi Mirim  
-**Materiais de Referência:** POO_07 a POO_10  
+![Java](https://img.shields.io/badge/Java-17%2B-18181B?style=flat-square)
+![Interface](https://img.shields.io/badge/GUI-Java%20Swing-27272A?style=flat-square)
+![Persistencia](https://img.shields.io/badge/Persistência-Memória%20RAM%20(ArrayList)-3F3F46?style=flat-square)
+![Disciplina](https://img.shields.io/badge/FATEC%20Mogi%20Mirim-POO%20(P2)-1D4ED8?style=flat-square)
 
-![Interface Gráfica Moderna](preview_ui.png)  
-
----
-
-## 👥 1. Identificação do(s) Aluno(s)
-
-- **Integrantes:**
-  - **Nome:** Juan Diego [Completar Sobrenome se desejar] — **RA:** [Preencher RA]
-  - *(Trabalho realizado individualmente / em dupla conforme autorização das diretrizes)*
-- **Curso:** Análise e Desenvolvimento de Sistemas / Gestão em TI
-- **Disciplina:** Programação Orientada a Objetos (POO)
+Aplicação desktop desenvolvida em Java puro (`javax.swing.*` e `java.util.*`) para o gerenciamento de bilheteria e controle de portaria de eventos, mantendo todos os dados em memória RAM durante a execução. Projeto entregue como avaliação prática **P2** da disciplina de **Programação Orientada a Objetos** (materiais de referência **POO_07 a POO_10**).
 
 ---
 
-## 🎟️ 2. Tema Escolhido
+## Sumário
 
-- **Tema Nº 08:** **Controle de Eventos e Venda de Ingressos**
-- **Entidade Principal (`Comparable`):** `Ingresso` (ordenação natural por código sequencial do bilhete com `Collections.sort()`).
-- **Interface de Negócio Obrigatória:** `Validavel` (método `validarAcessoCatraca()` acompanhado de métodos `default` e `static` do Java moderno).
-- **Checked Exception Customizada:** `IngressoInvalidoException` (herda de `java.lang.Exception`, nos moldes da `SemSaldoException` do material POO_08).
-- **Operações em Memória (`List<T>`):**
-  - Venda de bilhetes (inteira e meia-entrada com cálculo automático de 50%);
-  - Conferência na portaria com baixa via catraca polimórfica;
-  - Cancelamento de ingressos com validação de elegibilidade;
-  - Relatório consolidado de público e bilheteria em `JTextArea`.
+1. [Identificação](#1-identificação)
+2. [Tema Escolhido e Requisitos Atendidos](#2-tema-escolhido-e-requisitos-atendidos)
+3. [Interface Gráfica](#3-interface-gráfica)
+4. [Arquitetura e Modelagem](#4-arquitetura-e-modelagem)
+5. [Instruções de Compilação e Execução](#5-instruções-de-compilação-e-execução)
+6. [Roteiro de Testes Manuais](#6-roteiro-de-testes-manuais)
+7. [Registro de Uso de IA Generativa](#7-registro-de-uso-de-ia-generativa)
 
 ---
 
-## 🏛️ 3. Arquitetura do Software e Estrutura de Pacotes
+## 1. Identificação
 
-O projeto segue rigorosamente a padronização e boas práticas vistas em aula e solicitadas na página 3 das diretrizes:
+| Campo | Informação                             |
+| :--- |:---------------------------------------|
+| **Aluno** | Juan Ygor Delgado                      |
+| **RA** | 1630482523043                          |
+| **Curso** | Análise e Desenvolvimento de Sistemas  |
+| **Turno** | Noturno                                |
+| **Instituição** | FATEC Mogi Mirim                       |
+| **Disciplina** | Programação Orientada a Objetos (POO)  |
+| **Professor** | Prof Marcos Roberto de Moraes (Maromo) |
+| **Referência** | Materiais POO_07 a POO_10              |
 
+---
+
+## 2. Tema Escolhido e Requisitos Atendidos
+
+**Tema 08 — Controle de Eventos e Venda de Ingressos**
+
+O sistema cobre o ciclo operacional de uma bilheteria: emissão de ingressos inteiros e meia-entrada, busca de bilhetes, conferência e baixa na portaria (catraca), cancelamento com validação de regras de negócio, ordenação da coleção em memória e geração de relatório consolidado de público e receita.
+
+### Mapeamento dos Pilares da Disciplina
+
+| Material | Conceito Exigido | Aplicação no Projeto |
+| :--- | :--- | :--- |
+| **POO_07** | GUI Swing (`JFrame`, `JTextField`, `JLabel`, `JButton`, `JTextArea`/`JScrollPane`), `ActionListener` e `WindowListener` | `TelaEventos` estende `JFrame`, implementa `ActionListener` e `WindowListener`, exibe tabela, área de relatório em `JTextArea` e confirma o fechamento em `windowClosing()`. |
+| **POO_08** | Checked Exception customizada (`extends Exception`), tratamento de `NumberFormatException` e feedback via `JOptionPane` | `IngressoInvalidoException` lançada nas regras de catraca e cancelamento; validações numéricas de preço e código com captura de `NumberFormatException` e alertas visuais em `JOptionPane`. |
+| **POO_09** | Persistência em memória (`List<T> = new ArrayList<>()`), `Comparable<T>`, `Collections.sort()`, `equals()` e `hashCode()` | `listaIngressos` mantida em RAM; `Ingresso` implementa `Comparable<Ingresso>` ordenando por código sequencial e sobrescreve `equals()`, `hashCode()` e `toString()`. |
+| **POO_10** | Polimorfismo por interface própria com métodos abstratos, `default` e `static` | Interface `Validavel` define `validarAcessoCatraca()`, os métodos `default` `formatarValor()` e `obterInstrucaoCatraca()` e o método `static` `calcularValorMeia()`, especializados por `IngressoInteira` e `IngressoMeia`. |
+
+---
+
+## 3. Interface Gráfica
+
+A tela principal foi organizada em duas colunas para separar entrada de dados e acompanhamento em tempo real, com indicadores resumidos no topo e alternância entre a grade de bilhetes e o relatório textual. O seletor no canto superior direito permite alternar entre duas paletas sóbrias: **Graphite Minimal** (padrão) e **Slate Blue**.
+
+### Tela Principal — Venda, Portaria e Grade de Ingressos
+
+![Tela Principal do Sistema](docs/tela-principal.png)
+
+### Aba Relatório de Público (`JTextArea`)
+
+![Relatório de Público e Bilheteria](docs/tela-relatorio.jpg)
+
+---
+
+## 4. Arquitetura e Modelagem
+
+### Estrutura de Diretórios
+
+```text
+Controle-eventos-ingressos/
+├── docs/
+│   ├── tela-principal.png
+│   └── tela-relatorio.jpg
+├── src/
+│   └── br/
+│       └── com/
+│           └── eventos/
+│               ├── exception/
+│               │   └── IngressoInvalidoException.java
+│               ├── interfaces/
+│               │   └── Validavel.java
+│               ├── model/
+│               │   ├── Ingresso.java
+│               │   ├── IngressoInteira.java
+│               │   └── IngressoMeia.java
+│               └── view/
+│                   ├── Principal.java
+│                   └── TelaEventos.java
+├── executar.bat
+└── README.md
 ```
-src/
-└── br/
-    └── com/
-        └── eventos/
-            ├── Principal.java                     # Ponto de entrada (main) com Look and Feel Nimbus
-            ├── exception/
-            │   └── IngressoInvalidoException.java # Checked Exception customizada (herda de Exception)
-            ├── interfaces/
-            │   └── Validavel.java                 # Interface com método abstrato, default e static
-            ├── model/
-            │   ├── Ingresso.java                  # Entidade principal abstrata (Comparable, equals, hashCode)
-            │   ├── IngressoInteira.java           # Subclasse para ingressos inteiros
-            │   └── IngressoMeia.java              # Subclasse para meia-entrada (comprovante estudantil)
-            └── view/
-                └── TelaEventos.java               # Interface gráfica Swing (JFrame, Eventos e List em RAM)
+
+### Diagrama de Classes (UML)
+
+```mermaid
+classDiagram
+    class Validavel {
+        <<interface>>
+        +validarAcessoCatraca() boolean
+        +formatarValor(valor: double) String
+        +obterInstrucaoCatraca() String
+        +calcularValorMeia(valorInteira: double)$ double
+    }
+
+    class Comparable~Ingresso~ {
+        <<interface>>
+        +compareTo(outro: Ingresso) int
+    }
+
+    class Exception {
+        <<Java Standard>>
+    }
+
+    class IngressoInvalidoException {
+        -serialVersionUID: long$
+        +IngressoInvalidoException()
+        +IngressoInvalidoException(mensagem: String)
+        +IngressoInvalidoException(mensagem: String, causa: Throwable)
+    }
+
+    class Ingresso {
+        <<abstract>>
+        +FORMATADOR_DATA_HORA: DateTimeFormatter$
+        -codigo: int
+        -evento: String
+        -nomeParticipante: String
+        -valor: double
+        -utilizado: boolean
+        -cancelado: boolean
+        -dataHoraAcesso: LocalDateTime
+        +getTipo()* String
+        +validarAcessoCatraca() boolean
+        +cancelar() void
+        +getStatus() String
+        +compareTo(outro: Ingresso) int
+        +equals(o: Object) boolean
+        +hashCode() int
+        +toString() String
+    }
+
+    class IngressoInteira {
+        +IngressoInteira()
+        +IngressoInteira(codigo: int, evento: String, nomeParticipante: String, valor: double)
+        +getTipo() String
+        +obterInstrucaoCatraca() String
+    }
+
+    class IngressoMeia {
+        -COMPROVANTE_PADRAO: String$
+        -documentoComprovante: String
+        +IngressoMeia()
+        +IngressoMeia(codigo: int, evento: String, nomeParticipante: String, valor: double)
+        +IngressoMeia(codigo: int, evento: String, nomeParticipante: String, valor: double, documentoComprovante: String)
+        +getDocumentoComprovante() String
+        +setDocumentoComprovante(documentoComprovante: String) void
+        +getTipo() String
+        +obterInstrucaoCatraca() String
+        +validarAcessoCatraca() boolean
+        +toString() String
+    }
+
+    class TelaEventos {
+        -listaIngressos: List~Ingresso~
+        -contadorSequencial: int
+        +actionPerformed(e: ActionEvent) void
+        +windowClosing(e: WindowEvent) void
+    }
+
+    class Principal {
+        +main(args: String[])$ void
+    }
+
+    Exception <|-- IngressoInvalidoException
+    Validavel <|.. Ingresso
+    Comparable <|.. Ingresso
+    Ingresso <|-- IngressoInteira
+    Ingresso <|-- IngressoMeia
+    Validavel ..> IngressoInvalidoException : throws
+    Ingresso ..> IngressoInvalidoException : throws
+    TelaEventos o-- Ingresso : gerencia em RAM
+    TelaEventos ..> IngressoInvalidoException : captura
+    Principal ..> TelaEventos : instancia
 ```
 
-### Detalhamento das Classes e Requisitos Técnicos Atendidos:
+### Ciclo de Vida e Regras de Estado do Ingresso
 
-1. **`br.com.eventos.interfaces.Validavel`:**
-   - **Método Abstrato:** `boolean validarAcessoCatraca() throws IngressoInvalidoException;`
-   - **Método Default:** `default String formatarValor(double valor)` (formatação monetária `R$ 0,00`).
-   - **Método Default:** `default String obterInstrucaoCatraca()` (orientações específicas para a portaria).
-   - **Método Static:** `static double calcularValorMeia(double valorInteira)` (aplica a regra de 50% de desconto).
+```mermaid
+stateDiagram-v2
+    [*] --> Disponivel : Cadastrar venda
+    Disponivel --> Utilizado : validarAcessoCatraca()
+    Disponivel --> Cancelado : cancelar()
+    Utilizado --> Utilizado : novo acesso ou cancelamento dispara IngressoInvalidoException
+    Cancelado --> Cancelado : acesso ou novo cancelamento dispara IngressoInvalidoException
+```
 
-2. **`br.com.eventos.exception.IngressoInvalidoException`:**
-   - Checked Exception customizada estendendo `java.lang.Exception`.
-   - Disparada ao tentar:
-     - Realizar acesso com ingresso cancelado;
-     - Realizar acesso duplo com ingresso já utilizado na catraca;
-     - Cancelar um ingresso que já foi utilizado na portaria;
-     - Cancelar um bilhete já cancelado anteriormente.
-   - Mensagens de erro são capturadas e exibidas amigavelmente via `JOptionPane.showMessageDialog()`.
+### Responsabilidades das Classes
 
-3. **`br.com.eventos.model.Ingresso`:**
-   - Entidade principal contendo campos privados: `codigo`, `evento`, `nomeParticipante`, `valor`, `utilizado`, `cancelado`, `dataHoraAcesso`.
-   - Construtores sobrecarregados, getters e setters com encapsulamento rigoroso.
-   - **`Comparable<Ingresso>`:** sobrescreve `compareTo()` para permitir a ordenação natural da lista em memória por código sequencial com `Collections.sort()`.
-   - **`equals()` e `hashCode()`:** sobrescritos considerando a unicidade do código do bilhete no evento.
-   - **`toString()`:** representação textual legível formatada para geração de relatórios.
+- **`br.com.eventos.interfaces.Validavel`**
+  Estabelece o contrato de validação na portaria (`validarAcessoCatraca()`) e centraliza utilitários de negócio com recursos modernos de interface em Java: `formatarValor(double)` e `obterInstrucaoCatraca()` como métodos `default`, e `calcularValorMeia(double)` como método `static`.
 
-4. **`br.com.eventos.model.IngressoInteira` e `IngressoMeia` (Polimorfismo por Herança e Interface):**
-   - `IngressoInteira`: acesso padrão e conferência simples de identidade na portaria.
-   - `IngressoMeia`: especializa a regra armazenando o `documentoComprovante` (ex: Carteirinha de Estudante) e personalizando a validação na catraca (`obterInstrucaoCatraca()` e `validarAcessoCatraca()`).
+- **`br.com.eventos.exception.IngressoInvalidoException`**
+  Exceção checada que estende diretamente `java.lang.Exception`, forçando o tratamento explícito via `try-catch` na camada de visão em toda tentativa de acesso ou cancelamento inválido.
 
-5. **`br.com.eventos.view.TelaEventos`:**
-   - Estende `javax.swing.JFrame` e implementa `ActionListener` e `WindowListener`.
-   - Mantém todos os dados 100% em memória RAM: `private final List<Ingresso> listaIngressos = new ArrayList<>()`.
-   - Contém todos os botões e componentes solicitados na Pág. 3 do PDF:
-     - **Cadastrar (Venda):** registra nova emissão de bilhete com validações e captura de `NumberFormatException`;
-     - **Pesquisar:** busca bilhete por código ou nome do participante;
-     - **Processar Operação (Catraca):** realiza a conferência e baixa de acesso do participante;
-     - **Cancelar Ingresso:** cancela bilhetes elegíveis com confirmação;
-     - **Ordenar (Código):** executa `Collections.sort(listaIngressos)` e atualiza a interface;
-     - **Relatório de Público:** gera estatísticas consolidadas no painel de texto;
-     - **Limpar:** reseta os campos do formulário;
-     - **Sair:** fecha a aplicação com diálogo de confirmação.
-   - Exibição em abas integradas:
-     - **Aba 📋 Tabela Dinâmica (`JTable`):** com ordenação visual, seleção e preenchimento de campos;
-     - **Aba 📊 Relatório de Público (`JTextArea` dentro de `JScrollPane`):** extrato estatístico completo (público presente, receita total, taxa de comparecimento, listagem detalhada dos bilhetes).
-   - Fechamento seguro interceptado por `windowClosing` via `WindowListener`.
+- **`br.com.eventos.model.Ingresso`**
+  Classe abstrata central do domínio. Encapsula os dados do bilhete com getters e setters, controla os estados `utilizado` e `cancelado`, registra a `dataHoraAcesso` no momento da baixa e implementa:
+  - `compareTo(Ingresso)`: ordenação natural crescente pelo código sequencial do bilhete.
+  - `equals(Object)` e `hashCode()`: identidade baseada no par `(codigo, evento)`, usando `instanceof Ingresso` para manter a consistência entre subclasses polimórficas.
+  - `toString()`: formatação tabular utilizada no relatório textual.
 
-6. **`br.com.eventos.Principal`:**
-   - Contém o método `public static void main(String[] args)` que configura o Look and Feel Nimbus e exibe a tela na fila de eventos do Swing (`SwingUtilities.invokeLater`).
+- **`br.com.eventos.model.IngressoInteira` e `IngressoMeia`**
+  Subclasses concretas que demonstram polimorfismo na conferência de portaria. `IngressoInteira` libera acesso direto; `IngressoMeia` mantém `documentoComprovante`, sobrescreve `obterInstrucaoCatraca()` para orientar o operador a exigir o comprovante e valida sua presença em `validarAcessoCatraca()`.
+
+- **`br.com.eventos.view.TelaEventos`**
+  Formulário principal estendendo `JFrame` e implementando `ActionListener` e `WindowListener`. Mantém os dados em `List<Ingresso> listaIngressos = new ArrayList<>()`, disponibiliza os botões exigidos (`Cadastrar`, `Pesquisar`, `Processar Operação`, `Ordenar` e `Sair`, além de `Cancelar`, `Relatório` e `Limpar`), atualiza os totalizadores em tempo real e emite o relatório de público em `JTextArea`.
+
+- **`br.com.eventos.view.Principal`**
+  Ponto de entrada (`main`), responsável por aplicar o Look and Feel nativo do sistema operacional e iniciar `TelaEventos` na *Event Dispatch Thread* via `SwingUtilities.invokeLater`.
 
 ---
 
-## ⚙️ 4. Instruções de Compilação e Execução
+## 5. Instruções de Compilação e Execução
 
-### Pré-requisitos:
-- **Java JDK 17** ou superior instalado (projeto testado e homologado no Java 21).
+### Pré-requisitos
 
-### Execução em 1 Clique (Windows):
-Basta dar duplo clique no arquivo `executar.bat` presente na raiz do projeto, ou executar via terminal:
+- **Java JDK 17** ou superior instalado e configurado na variável `PATH` (testado com JDK 21).
+- Nenhuma biblioteca externa é necessária; o projeto utiliza apenas a API padrão do JDK.
+
+### Execução rápida no Windows
+
+Na pasta raiz do repositório, execute o script:
+
 ```bat
 .\executar.bat
 ```
 
-### Compilação e Execução Manual via Terminal:
+### Compilação e execução manual via terminal
+
 ```bat
 if not exist bin mkdir bin
-javac -encoding UTF-8 -d bin src\br\com\eventos\interfaces\*.java src\br\com\eventos\exception\*.java src\br\com\eventos\model\*.java src\br\com\eventos\view\*.java src\br\com\eventos\*.java
-java -cp bin br.com.eventos.Principal
+javac -encoding UTF-8 -d bin src\br\com\eventos\interfaces\*.java src\br\com\eventos\exception\*.java src\br\com\eventos\model\*.java src\br\com\eventos\view\*.java
+java -cp bin br.com.eventos.view.Principal
 ```
 
----
+### Execução via IDE (IntelliJ IDEA / NetBeans / Eclipse)
 
-## 🤖 5. Histórico e Registro de Prompts de IA Generativa
-
-Em cumprimento à **Regra 2 (Uso de IA Generativa e Registro de Prompts)** estipulada no documento oficial da P2 pelo Prof. Maromo, segue o histórico transparente das interações:
-
-### 🔹 Interação 1: Análise e Adequação ao Tema 08
-- **O que foi solicitado à IA:**
-  > "Estou realizando a P2 com o Tema 08: Controle de Eventos e Venda de Ingressos. Faça um review completo do código existente no diretório `d:\Projetos_Pessoais\Controle-eventos-ingressos` e me aponte tudo o que falta para atender 100% aos requisitos dos materiais POO_07 a POO_10 do Prof. Maromo."
-- **Resposta obtida:**
-  A IA identificou que:
-  1. A interface `Validavel` continha apenas o método abstrato, faltando métodos `default` e `static` exigidos pelo requisito 7 e página 3 do PDF;
-  2. A classe `Ingresso` não sobrescrevia `equals()`, `hashCode()` nem `toString()`, além de não possuir os setters conforme padrão JavaBean;
-  3. Faltava o botão explícito "Ordenar" acionando `Collections.sort()` com feedback ao usuário, bem como os nomes dos botões de ação exigidos na página 3 (`Cadastrar`, `Pesquisar`, `Processar Operação`, `Ordenar`, `Sair`);
-  4. Faltava a área de texto `JTextArea` dentro de `JScrollPane` para emissão do relatório consolidado de público;
-  5. O `README.md` não continha a identificação dos alunos nem o detalhamento dos prompts.
-- **Refinamento aplicado:**
-  Aprovadas as melhorias e autorizada a refatoração completa do projeto.
+1. Abra a pasta raiz `Controle-eventos-ingressos` como projeto Java apontando `src` como *Sources Root*.
+2. Execute a classe `br.com.eventos.view.Principal`.
 
 ---
 
-### 🔹 Interação 2: Implementação de Polimorfismo e Métodos na Interface
-- **O que foi solicitado à IA:**
-  > "Atualize a interface `Validavel` com métodos default (formatação de moeda e instruções da catraca) e método static para cálculo de meia-entrada. Atualize `IngressoInteira` e `IngressoMeia` para demonstrar polimorfismo real de regras de negócio, onde a meia exige documento comprobatório."
-- **Resposta obtida:**
-  A IA reestruturou a interface com `formatarValor()`, `obterInstrucaoCatraca()` e `calcularValorMeia()`. Na classe `IngressoMeia`, foi adicionado o atributo `documentoComprovante` e a sobrescrita de `validarAcessoCatraca()` e `obterInstrucaoCatraca()`, especializando o comportamento na portaria.
-- **Refinamento aplicado:**
-  Garantimos que o construtor sobrecarregado de `IngressoMeia` mantivesse um valor padrão caso nenhum documento fosse digitado, evitando exceções indevidas em vendas rápidas.
+## 6. Roteiro de Testes Manuais
+
+A aplicação inicia com **3 ingressos pré-cadastrados** (`#1 Disponível`, `#2 Utilizado` e `#3 Cancelado`) para agilizar a conferência das funcionalidades:
+
+| Cenário | Ação na Interface | Resultado Esperado |
+| :--- | :--- | :--- |
+| **Venda Inteira** | Preencher Evento, Participante, tipo `Inteira`, Valor `120,00` e clicar em `Cadastrar` | Bilhete `#4` criado com valor `R$ 120,00`, status `Disponível` e totalizadores atualizados. |
+| **Venda Meia-entrada** | Selecionar `Meia-entrada (50%)`, informar Valor `120,00` e comprovante, clicar em `Cadastrar` | Campo de comprovante habilita automaticamente; bilhete `#5` criado com `R$ 60,00` via `Validavel.calcularValorMeia()`. |
+| **Erro de formato numérico** | Informar `abc` em `Valor Inteira` ou no `Código do Bilhete` e acionar a operação | `NumberFormatException` capturada e mensagem exibida via `JOptionPane.showMessageDialog()`. |
+| **Pesquisa** | Digitar `2` no campo `Código do Bilhete` (ou um nome em `Participante`) e clicar em `Pesquisar` | Campos preenchidos com os dados do bilhete localizado e linha selecionada na tabela. |
+| **Validação na catraca** | Selecionar o bilhete `#1` (`Disponível`) e clicar em `Processar Operação` | Diálogo exibe a orientação polimórfica da portaria; ao confirmar, status muda para `Utilizado` com data/hora registrada. |
+| **Exceção — Acesso duplicado** | Selecionar o bilhete `#2` (`Utilizado`) e clicar em `Processar Operação` | Dispara `IngressoInvalidoException` com aviso via `JOptionPane` informando o horário do uso anterior. |
+| **Exceção — Ingresso cancelado** | Selecionar o bilhete `#3` (`Cancelado`) e clicar em `Processar Operação` | Dispara `IngressoInvalidoException` negando a liberação na catraca. |
+| **Exceção — Cancelar bilhete usado** | Selecionar o bilhete `#2` (`Utilizado`) e clicar em `Cancelar` | Dispara `IngressoInvalidoException` impedindo o cancelamento de bilhete já utilizado. |
+| **Ordenação natural** | Clicar em `Ordenar` | Executa `Collections.sort(listaIngressos)` ordenando pelo código sequencial via `Comparable<Ingresso>`. |
+| **Relatório de público** | Clicar em `Relatório` (ou na aba `Relatório de Público`) | Exibe o consolidado de emitidos, válidos, cancelados, público presente, taxa de comparecimento, receita e listagem completa no `JTextArea`. |
+| **Fechamento da janela** | Clicar em `Sair` ou no botão `X` da janela | `WindowListener` intercepta o fechamento e solicita confirmação antes de encerrar a sessão em memória. |
 
 ---
 
-### 🔹 Interação 3: Interface Gráfica Swing com Abas, Botões Canônicos e Relatório em JTextArea
-- **O que foi solicitado à IA:**
-  > "Refatore a `TelaEventos` para implementar diretamente `ActionListener` e `WindowListener`. Mantenha a tabela de ingressos que é muito visual, mas adicione uma aba com `JTextArea` para o Relatório de Público detalhado. Adicione os botões com os nomes exatos exigidos pelo professor e garanta tratamento de `NumberFormatException` e da checked exception via `JOptionPane`."
+## 7. Registro de Uso de IA Generativa
+
+Em conformidade com a Regra 2 das diretrizes da P2, seguem documentados os prompts utilizados durante o desenvolvimento. A modelagem das regras de negócio e classes de domínio (`model`, `interfaces` e `exception`) foi estruturada a partir dos materiais POO_07 a POO_10, enquanto a IA foi utilizada como apoio na prototipagem, estilização e refinamento da interface gráfica em `javax.swing.*` (`TelaEventos.java`), além da revisão final dos requisitos.
+
+### Interação 1 — Prototipagem da tela principal em Java Swing
+
+- **Prompt utilizado:**
+  > "Crie o layout de uma tela `JFrame` em Java Swing para um sistema de controle de eventos e venda de ingressos que manipula uma `List<Ingresso>` em memória. A tela precisa implementar `ActionListener` e `WindowListener`, conter campos para evento, participante, tipo (inteira/meia), valor e código, além dos botões `Cadastrar`, `Pesquisar`, `Processar Operação`, `Cancelar`, `Ordenar`, `Relatório`, `Limpar` e `Sair`, uma tabela de registros e uma `JTextArea` para o relatório de público."
 - **Resposta obtida:**
-  A IA criou um `JTabbedPane` com duas abas: a tabela visual e o relatório em texto monospaçado. Incluiu os botões `Cadastrar (Venda)`, `Pesquisar`, `Processar Operação (Catraca)`, `Cancelar Ingresso`, `Ordenar (Código)`, `Relatório de Público`, `Limpar` e `Sair`, com tratamento de eventos nos métodos canônicos.
-- **Refinamento aplicado:**
-  Inseridos 3 registros de demonstração na inicialização da aplicação (um disponível, um utilizado e um cancelado) para que o professor consiga testar imediatamente a ordenação, a portaria e o relatório logo ao iniciar o programa.
+  A IA gerou a estrutura visual inicial da `TelaEventos` organizada em duas colunas: cartões de formulário (venda e portaria) à esquerda e painel de acompanhamento à direita com totalizadores numéricos e `JTabbedPane` alternando entre `JTable` e `JTextArea` dentro de `JScrollPane`.
+- **Refinamento realizado:**
+  Integrei os eventos dos botões diretamente aos métodos da camada de domínio (`validarAcessoCatraca()`, `cancelar()`, `Validavel.calcularValorMeia()` e `Collections.sort()`), habilitei o campo de comprovante dinamicamente apenas para meia-entrada e configurei o listener de seleção da tabela para preencher o código do bilhete automaticamente.
 
----
+### Interação 2 — Acabamento visual da interface em Swing puro
 
-### 🔹 Interação 4: Testes Automatizados e Homologação
-- **O que foi solicitado à IA:**
-  > "Escreva um teste de integração das regras de negócio para verificar se `Collections.sort()` ordena corretamente pelo código, se `equals()` e `hashCode()` funcionam com as subclasses polimórficas, e se a `IngressoInvalidoException` é disparada ao tentar reutilizar ingresso ou entrar com ingresso cancelado."
+- **Prompt utilizado:**
+  > "Melhore o visual dessa tela Swing usando apenas Java puro, sem bibliotecas externas: quero cards com bordas arredondadas, botões sem o estilo antigo padrão do Windows, badges arredondados na coluna de status da tabela e barras de rolagem mais finas."
 - **Resposta obtida:**
-  A IA executou os testes via terminal e detectou uma sutileza no `equals()`, que comparava `getClass() != o.getClass()` entre `IngressoMeia` e `IngressoInteira`. A IA refinou o método para usar `instanceof Ingresso`, permitindo a identificação polimórfica pelo código e evento. Todos os testes passaram com 100% de sucesso.
-- **Refinamento aplicado:**
-  Atualização do arquivo `README.md` com o histórico consolidado e compilação final bem-sucedida.
+  A IA implementou componentes internos customizados com `Graphics2D` (`PainelCard`, `BotaoModerno`, `CardKPI`, `StatusBadgeRenderer` e `ModernScrollBarUI`), aplicando antialiasing, cantos arredondados, efeito hover nos botões e pílulas centralizadas na coluna de status.
+- **Refinamento realizado:**
+  Ajustei as alturas máximas dos `JTextField` dentro do `BoxLayout` para evitar distorção vertical no campo de código, removi caracteres Unicode que renderizavam como blocos inválidos na fonte padrão do Windows e reduzi o rótulo dos status (`Disponível`, `Utilizado`, `Cancelado`) para evitar truncamento visual na tabela.
 
----
+### Interação 3 — Paleta de cores sóbria e limpeza do código
 
-### 🔹 Interação 5: Redesign e Modernização da Interface Swing
-- **O que foi solicitado à IA:**
-  > "Preciso de melhorias na interface do Swing, uma interface boa e funcional, pois o visual padrão cinza/antigo está desagradável."
+- **Prompt utilizado:**
+  > "A tela ficou muito colorida com botões de várias cores diferentes. Ajuste para uma paleta de cores mais clean e sóbria (fundo neutro, cards brancos e contraste consistente), deixe apenas Graphite Minimal como padrão e Slate Blue como segunda opção."
 - **Resposta obtida:**
-  A IA reprojetou completamente a interface visual em `javax.swing.*` adotando arquitetura moderna estilo Dashboard (Tailwind/Clean Slate) sem depender de bibliotecas externas:
-  - Header escuro com badge dinâmico de status;
-  - 4 Cards de KPIs em tempo real (Total Emitidos, Público na Catraca, Cancelados, Receita Total);
-  - Divisão em duas colunas: formulários em cards brancos com bordas suaves à esquerda e tabela com abas à direita;
-  - Pílulas/badges coloridos com cantos arredondados na tabela para identificar o status do bilhete (Azul para Disponível, Verde Esmeralda para Utilizado, Vermelho para Cancelado);
-  - Botões modernos com efeito hover e tipografia Segoe UI em toda a aplicação.
-- **Refinamento aplicado:**
-  Ajuste das dimensões fixas de campos para evitar estiramento vertical e eliminação de caracteres especiais com risco de renderização incorreta (tofu) no Windows. Inclusão da captura de tela da nova interface no README.md.
-
----
-
-### 🔹 Interação 6: Refinamento de Alto Padrão - Paleta Royal Blue & Frost
-- **O que foi solicitado à IA:**
-  > "Gostei muito do resultado! Dá para deixar mais bonito ainda seguindo uma paleta de cores clean de 4 opções?"
-- **Resposta obtida:**
-  A IA apresentou 4 conceitos harmônicos de design clean (Royal Blue & Frost, Deep Indigo & Slate, Emerald & Mint, Dark Charcoal & Amber). Com a escolha da opção **Royal Blue & Frost (estilo Stripe / Apple)**, a interface foi elevada ao mais alto nível de acabamento visual:
-  - Implementação de sombras suaves (Drop Shadows em Java 2D) com efeito de relevo e elevação nos cards;
-  - Barra superior refinada com detalhe de acento em Azul Royal (`#2563EB`) e indicador de status verde esmeralda;
-  - Cards de KPIs executivos com barra vertical de destaque colorido e tipografia ampliada de 19pt;
-  - Scrollbars minimalistas ultrafinas (8px) arredondadas no estilo macOS / Chrome moderno;
-  - Efeito de profundidade e foco suave em campos de texto.
-- **Refinamento aplicado:**
-  Regeração da imagem `preview_ui.png` com o design final aprovado e comitagem das melhorias no repositório Git local.
+  A IA unificou os botões secundários em tons neutros com borda fina, restringiu o destaque visual aos botões principais (`Cadastrar` e `Processar Operação`) e ao card de receita ativa, manteve somente as duas paletas solicitadas no seletor.
+- **Refinamento realizado:**
+  Movi a classe `Principal` para o pacote `br.com.eventos.view`, ajustei o script `executar.bat` para o novo ponto de entrada, validei todas as regras de exceção, ordenação e polimorfismo em execução local e documentei os diagramas UML e roteiro de testes neste `README.md`.

@@ -2,28 +2,26 @@ package br.com.eventos.model;
 
 import br.com.eventos.exception.IngressoInvalidoException;
 
-/**
- * Representa um Ingresso do tipo Meia-entrada (Requisito POO_07 e POO_10).
- * Especializa a regra de validação na portaria exigindo documentação comprobatória (polimorfismo).
- */
 public class IngressoMeia extends Ingresso {
+
+    private static final String COMPROVANTE_PADRAO = "Carteira Estudantil / DNE";
 
     private String documentoComprovante;
 
     public IngressoMeia() {
         super();
-        this.documentoComprovante = "Comprovante Estudantil";
+        this.documentoComprovante = COMPROVANTE_PADRAO;
     }
 
     public IngressoMeia(int codigo, String evento, String nomeParticipante, double valor) {
-        this(codigo, evento, nomeParticipante, valor, "Carteira Estudantil / DNE");
+        this(codigo, evento, nomeParticipante, valor, COMPROVANTE_PADRAO);
     }
 
     public IngressoMeia(int codigo, String evento, String nomeParticipante, double valor, String documentoComprovante) {
         super(codigo, evento, nomeParticipante, valor);
         this.documentoComprovante = (documentoComprovante != null && !documentoComprovante.trim().isEmpty())
                 ? documentoComprovante.trim()
-                : "Carteira Estudantil / DNE";
+                : COMPROVANTE_PADRAO;
     }
 
     public String getDocumentoComprovante() {
@@ -31,7 +29,7 @@ public class IngressoMeia extends Ingresso {
     }
 
     public void setDocumentoComprovante(String documentoComprovante) {
-        this.documentoComprovante = (documentoComprovante != null) ? documentoComprovante.trim() : "";
+        this.documentoComprovante = documentoComprovante != null ? documentoComprovante.trim() : "";
     }
 
     @Override
@@ -41,17 +39,13 @@ public class IngressoMeia extends Ingresso {
 
     @Override
     public String obterInstrucaoCatraca() {
-        return "ATENÇÃO PORTARIA: Exigir obrigatoriamente a apresentação de: " + documentoComprovante;
+        return "Atenção portaria: exigir apresentação de " + documentoComprovante + ".";
     }
 
-    /**
-     * Validação polimórfica específica para Meia-entrada:
-     * Verifica documento e invoca a validação de portaria.
-     */
     @Override
     public boolean validarAcessoCatraca() throws IngressoInvalidoException {
         if (documentoComprovante == null || documentoComprovante.trim().isEmpty()) {
-            throw new IngressoInvalidoException("ACESSO NEGADO: Ingresso meia-entrada sem documento comprobatório registrado.");
+            throw new IngressoInvalidoException("Acesso negado: ingresso meia-entrada sem documento comprobatório.");
         }
         return super.validarAcessoCatraca();
     }
